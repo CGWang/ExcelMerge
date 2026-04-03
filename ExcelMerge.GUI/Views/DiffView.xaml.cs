@@ -616,6 +616,8 @@ namespace ExcelMerge.GUI.Views
 
         private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
+            EnsureEmptyCounterpart();
+
             var src = SrcPathTextBox.Text;
             var dst = DstPathTextBox.Text;
 
@@ -634,8 +636,37 @@ namespace ExcelMerge.GUI.Views
 
         private void TryAutoExecuteDiff()
         {
+            EnsureEmptyCounterpart();
+
             if (File.Exists(SrcPathTextBox.Text) && File.Exists(DstPathTextBox.Text))
                 ExecuteDiff();
+        }
+
+        private string _emptyFilePath;
+
+        private void EnsureEmptyCounterpart()
+        {
+            var srcExists = File.Exists(SrcPathTextBox.Text);
+            var dstExists = File.Exists(DstPathTextBox.Text);
+
+            if (srcExists && !dstExists && string.IsNullOrWhiteSpace(DstPathTextBox.Text))
+            {
+                DstPathTextBox.Text = GetOrCreateEmptyFile();
+            }
+            else if (dstExists && !srcExists && string.IsNullOrWhiteSpace(SrcPathTextBox.Text))
+            {
+                SrcPathTextBox.Text = GetOrCreateEmptyFile();
+            }
+        }
+
+        private string GetOrCreateEmptyFile()
+        {
+            if (_emptyFilePath != null && File.Exists(_emptyFilePath))
+                return _emptyFilePath;
+
+            _emptyFilePath = Path.Combine(Path.GetTempPath(), "ExcelMerge_empty.xlsx");
+            ExcelUtility.CreateWorkbook(_emptyFilePath, ExcelWorkbookType.XLSX);
+            return _emptyFilePath;
         }
 
         private void Swap()
