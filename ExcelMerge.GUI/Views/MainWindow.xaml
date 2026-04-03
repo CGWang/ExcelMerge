@@ -80,7 +80,7 @@
                 <MenuItem Header="{x:Static props:Resources.MenuItem_RecentFileSets}" 
                           ItemsSource="{Binding RecentFileSets}" >
                     <MenuItem.ItemContainerStyle>
-                        <Style TargetType="MenuItem">
+                        <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                             <Setter Property="Header" Value="{Binding}"/>
                             <Setter Property="Command" Value="{Binding DataContext.OpenFileSetCommand,
                                 RelativeSource={RelativeSource AncestorType=Window}}"/>
@@ -116,7 +116,7 @@
                           ItemsSource="{Binding ExternalCommands}" 
                           >
                     <MenuItem.ItemContainerStyle>
-                        <Style TargetType="MenuItem">
+                        <Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
                             <Setter Property="Header" Value="{Binding}"/>
                             <Setter Property="Command" Value="{Binding DataContext.ExecuteExternalCommandCommand,
                                 RelativeSource={RelativeSource AncestorType=Window}}"/>
