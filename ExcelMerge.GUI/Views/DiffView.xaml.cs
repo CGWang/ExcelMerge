@@ -575,6 +575,29 @@ namespace ExcelMerge.GUI.Views
             Swap();
         }
 
+        private void SrcBrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            BrowseFile(SrcPathTextBox);
+        }
+
+        private void DstBrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            BrowseFile(DstPathTextBox);
+        }
+
+        private void BrowseFile(TextBox target)
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Filter = "Excel Files|*.xlsx;*.xls;*.csv;*.tsv|All Files|*.*"
+            };
+            if (!string.IsNullOrEmpty(target.Text) && Directory.Exists(Path.GetDirectoryName(target.Text)))
+                dlg.InitialDirectory = Path.GetDirectoryName(target.Text);
+
+            if (dlg.ShowDialog() == true)
+                target.Text = dlg.FileName;
+        }
+
         private void Swap()
         {
             var srcTmp = SrcSheetCombobox.SelectedIndex;
