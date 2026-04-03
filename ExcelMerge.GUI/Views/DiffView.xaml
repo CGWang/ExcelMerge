@@ -62,7 +62,11 @@
           <!--Src-->
           <GroupBox Header="{x:Static props:Resources.Word_SrcFile}" Margin="10,0,0,0">
             <StackPanel Orientation="Horizontal">
-              <Label Content="{x:Static props:Resources.Word_Path}"/>
+              <Button x:Name="SrcBrowseButton" Width="28" Height="24" Margin="0,0,4,0" Padding="0"
+                      Click="SrcBrowseButton_Click" ToolTip="Browse...">
+                <Path Data="M2,4 L2,14 L16,14 L16,6 L9,6 L7,4 Z M0,2 L8,2 L10,4 L18,4 L18,16 L0,16 Z"
+                      Fill="#5F6672" Width="18" Height="16" Stretch="Uniform"/>
+              </Button>
               <TextBox x:Name="SrcPathTextBox" AcceptsReturn="False" Margin="1"
                        Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={vc:PercentageConverter}, ConverterParameter='0.20'}"
                        AllowDrop="True"
@@ -71,12 +75,10 @@
                        TextChanged="PathTextBox_TextChanged"
                        Tag="0">
                 <i:Interaction.Behaviors>
-                  <behavior:DragAcceptBehavior 
+                  <behavior:DragAcceptBehavior
                                             Description="{Binding DataContext. Description,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                 </i:Interaction.Behaviors>
               </TextBox>
-              <Button x:Name="SrcBrowseButton" Content="..." Width="28" Height="24" Margin="2,0,0,0" Padding="0"
-                      Click="SrcBrowseButton_Click" ToolTip="Browse..."/>
               <Label Content="{x:Static props:Resources.Word_Sheet}"/>
               <ComboBox x:Name="SrcSheetCombobox" Margin="0,0,5,0" Width="100"
                         ItemsSource="{Binding SrcSheetNames}"
@@ -103,7 +105,11 @@
           <!--Dst-->
           <GroupBox Header="{x:Static props:Resources.Word_DstFile}" Margin="8,0,0,0">
             <StackPanel Orientation="Horizontal">
-              <Label Content="{x:Static props:Resources.Word_Path}"/>
+              <Button x:Name="DstBrowseButton" Width="28" Height="24" Margin="0,0,4,0" Padding="0"
+                      Click="DstBrowseButton_Click" ToolTip="Browse...">
+                <Path Data="M2,4 L2,14 L16,14 L16,6 L9,6 L7,4 Z M0,2 L8,2 L10,4 L18,4 L18,16 L0,16 Z"
+                      Fill="#5F6672" Width="18" Height="16" Stretch="Uniform"/>
+              </Button>
               <TextBox x:Name="DstPathTextBox" AcceptsReturn="False" Margin="1"
                        Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={vc:PercentageConverter}, ConverterParameter='0.20'}"
                        AllowDrop="True"
@@ -112,12 +118,10 @@
                        TextChanged="PathTextBox_TextChanged"
                        Tag="1">
                 <i:Interaction.Behaviors>
-                  <behavior:DragAcceptBehavior 
+                  <behavior:DragAcceptBehavior
                                             Description="{Binding DataContext. Description,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
                 </i:Interaction.Behaviors>
               </TextBox>
-              <Button x:Name="DstBrowseButton" Content="..." Width="28" Height="24" Margin="2,0,0,0" Padding="0"
-                      Click="DstBrowseButton_Click" ToolTip="Browse..."/>
               <Label Content="{x:Static props:Resources.Word_Sheet}"/>
               <ComboBox x:Name="DstSheetCombobox" Margin="5,0,0,0" Width="100"
                         ItemsSource="{Binding DstSheetNames}"
