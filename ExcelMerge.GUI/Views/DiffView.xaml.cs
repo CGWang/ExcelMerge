@@ -595,7 +595,47 @@ namespace ExcelMerge.GUI.Views
                 dlg.InitialDirectory = Path.GetDirectoryName(target.Text);
 
             if (dlg.ShowDialog() == true)
+            {
                 target.Text = dlg.FileName;
+                TryAutoExecuteDiff();
+            }
+        }
+
+        private void PathTextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                var tb = sender as TextBox;
+                tb?.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+                TryAutoExecuteDiff();
+            }
+        }
+
+        private string _lastSrcPath = string.Empty;
+        private string _lastDstPath = string.Empty;
+
+        private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var src = SrcPathTextBox.Text;
+            var dst = DstPathTextBox.Text;
+
+            if (src == _lastSrcPath && dst == _lastDstPath)
+                return;
+
+            if (!File.Exists(src) || !File.Exists(dst))
+                return;
+
+            _lastSrcPath = src;
+            _lastDstPath = dst;
+
+            Dispatcher.InvokeAsync(() => ExecuteDiff(),
+                System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void TryAutoExecuteDiff()
+        {
+            if (File.Exists(SrcPathTextBox.Text) && File.Exists(DstPathTextBox.Text))
+                ExecuteDiff();
         }
 
         private void Swap()

@@ -67,6 +67,8 @@
                        Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={vc:PercentageConverter}, ConverterParameter='0.20'}"
                        AllowDrop="True"
                        Text="{Binding SrcPath}"
+                       KeyDown="PathTextBox_KeyDown"
+                       TextChanged="PathTextBox_TextChanged"
                        Tag="0">
                 <i:Interaction.Behaviors>
                   <behavior:DragAcceptBehavior 
@@ -106,6 +108,8 @@
                        Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={vc:PercentageConverter}, ConverterParameter='0.20'}"
                        AllowDrop="True"
                        Text="{Binding DstPath}"
+                       KeyDown="PathTextBox_KeyDown"
+                       TextChanged="PathTextBox_TextChanged"
                        Tag="1">
                 <i:Interaction.Behaviors>
                   <behavior:DragAcceptBehavior 
