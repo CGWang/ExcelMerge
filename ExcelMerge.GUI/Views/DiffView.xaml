@@ -81,8 +81,16 @@
             </StackPanel>
           </GroupBox>
 
+          <!--Swap-->
+          <Button x:Name="SwapButton" Content="⇄" FontSize="18" FontWeight="Bold"
+                  Width="36" Height="36"
+                  Click="SwapButton_Click" Margin="6,0,0,0"
+                  ToolTip="{x:Static props:Resources.ToolTip_Swap}"
+                  VerticalAlignment="Center"
+                  IsEnabled="{Binding Executable}"/>
+
           <!--Dst-->
-          <GroupBox Header="{x:Static props:Resources.Word_DstFile}" Margin="10,0,0,0">
+          <GroupBox Header="{x:Static props:Resources.Word_DstFile}" Margin="6,0,0,0">
             <StackPanel Orientation="Horizontal">
               <Label Content="{x:Static props:Resources.Word_Path}"/>
               <TextBox x:Name="DstPathTextBox" AcceptsReturn="False" Margin="1"
@@ -227,11 +235,6 @@
       </Expander.Header>
 
       <WrapPanel Orientation="Horizontal" Margin="3">
-
-        <Button x:Name="SwapButton" Content="{x:Static props:Resources.ToolTip_Swap}"
-                Height="36"
-                Click="SwapButton_Click" Margin="33,0,0,0" Padding="12,6"
-                IsEnabled="{Binding Executable}"/>
 
         <GroupBox Header="{x:Static props:Resources.Word_Search}" Margin="10,0,0,0">
           <StackPanel Orientation="Horizontal">
