@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Practices.Unity;
+using ExcelMerge.GUI.Utilities;
 
 namespace ExcelMerge.GUI.Views
 {
@@ -16,10 +16,10 @@ namespace ExcelMerge.GUI.Views
     class DiffViewEventArgs<T> : EventArgs
     {
         public T Sender { get; }
-        public IUnityContainer Container { get; }
+        public IContainer Container { get; }
         public TargetType TargetType { get; }
 
-        public DiffViewEventArgs(T sender, IUnityContainer container, TargetType targetType = TargetType.All)
+        public DiffViewEventArgs(T sender, IContainer container, TargetType targetType = TargetType.All)
         {
             Sender = sender;
             Container = container;

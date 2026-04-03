@@ -9,10 +9,9 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.Practices.Unity;
 using FastWpfGrid;
 using NetDiff;
-using SKCore.Collection;
+using ExcelMerge.GUI.Utilities;
 using ExcelMerge.GUI.ViewModels;
 using ExcelMerge.GUI.Settings;
 using ExcelMerge.GUI.Models;
@@ -23,7 +22,7 @@ namespace ExcelMerge.GUI.Views
     public partial class DiffView : UserControl
     {
         private ExcelSheetDiffConfig diffConfig = new ExcelSheetDiffConfig();
-        private IUnityContainer container;
+        private IContainer container;
         private const string srcKey = "src";
         private const string dstKey = "dst";
 
@@ -50,7 +49,7 @@ namespace ExcelMerge.GUI.Views
 
         private void InitializeContainer()
         {
-            container = new UnityContainer();
+            container = new SimpleContainer();
             container
                 .RegisterInstance(srcKey, SrcDataGrid)
                 .RegisterInstance(dstKey, DstDataGrid)

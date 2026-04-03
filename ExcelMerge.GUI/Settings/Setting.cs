@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using YamlDotNet.Serialization;
-using SKCore.Runtime.Serialization;
+using ExcelMerge.GUI.Utilities;
 
 namespace ExcelMerge.GUI.Settings
 {

@@ -8,9 +8,7 @@ using System.Windows.Shapes;
 using System.Windows.Media;
 using System.Windows.Input;
 using FastWpfGrid;
-using Microsoft.Practices.Unity;
-using SKCore.Collection;
-using SKCore.Wpf.Controls.Utilities;
+using ExcelMerge.GUI.Utilities;
 using ExcelMerge.GUI.Models;
 using ExcelMerge.GUI.Settings;
 
@@ -389,7 +387,7 @@ namespace ExcelMerge.GUI.Views
 
         #region
 
-        private void SyncRowHeight(IUnityContainer container)
+        private void SyncRowHeight(IContainer container)
         {
             var grids = container.ResolveAll<FastGridControl>();
             if (!grids.Any())

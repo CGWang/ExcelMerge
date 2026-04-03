@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using CommandLine;
 using ExcelMerge.GUI.Commands;
 using ExcelMerge.GUI.Settings;
 
@@ -14,21 +15,6 @@ namespace ExcelMerge.GUI
 
         public event Action OnSettingUpdated;
 
-        [STAThread()]
-        public static void Main()
-        {
-            App app = new App();
-            app.InitializeComponent();
-            app.Setting = ApplicationSetting.Load();
-            app.Setting.EnsureCulture();
-            app.UpdateResourceCulture();
-
-            if (app.Setting.Ensure())
-                app.Setting.Save();
-
-            app.Run();
-        }
-
         public static App Instance
         {
             get { return (App)Current; }
@@ -36,17 +22,24 @@ namespace ExcelMerge.GUI
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            Setting = ApplicationSetting.Load();
+            Setting.EnsureCulture();
+            UpdateResourceCulture();
+
+            if (Setting.Ensure())
+                Setting.Save();
+
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             base.OnStartup(e);
 
-            var args = Environment.GetCommandLineArgs().Skip(1).ToList();
-            if (!args.Any())
-                args.Add(CommandType.Diff.ToString());
+            var args = Environment.GetCommandLineArgs().Skip(1).ToArray();
+            if (args.Length == 0)
+                args = new[] { "diff" };
 
             CommandLineOption = new CommandLineOption();
 
-            var command = CreateCommand(args.ToArray());
+            var command = CreateCommand(args);
             command.ValidateOption();
             command.Execute();
         }
@@ -59,14 +52,22 @@ namespace ExcelMerge.GUI
 
         private ICommand CreateCommand(string[] args)
         {
-            if (CommandLine.Parser.Default.ParseArguments(args, CommandLineOption))
-            {
-                StoreOption();
-                CommandLineOption.ConvertToFullPath();
-                return CommandFactory.Create(CommandLineOption);
-            }
+            CommandLineOption parsed = null;
+            var result = Parser.Default.ParseArguments<CommandLineOption>(args);
 
-            throw new Exceptions.ExcelMergeException(true, $"Invalid argument.\nargument:\n{string.Join(" ", args)}");
+            result.WithParsed(o => parsed = o);
+            result.WithNotParsed(errors =>
+            {
+                throw new Exceptions.ExcelMergeException(true, $"Invalid argument.\nargument:\n{string.Join(" ", args)}");
+            });
+
+            if (parsed == null)
+                throw new Exceptions.ExcelMergeException(true, $"Invalid argument.\nargument:\n{string.Join(" ", args)}");
+
+            CommandLineOption = parsed;
+            StoreOption();
+            CommandLineOption.ConvertToFullPath();
+            return CommandFactory.Create(CommandLineOption);
         }
 
         private void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)

@@ -242,18 +242,26 @@ SVN merge 调用格式：
 
 ### 5.1 .NET 版本选择
 
-**推荐: 保持 .NET Framework 4.x**
+**决定: 升级到 .NET 8（LTS）**
 
 理由：
-- Windows 10/11 自带，用户零安装成本
-- WPF 在 .NET Framework 上完全稳定
-- 避免迁移引入的不必要风险
-- 如果后续确实需要 .NET 8 新特性，再迁移也不迟
+- .NET Framework 4.5.2 已于 2022 年 EOL，不再接收安全更新
+- 主要依赖（NPOI、Prism 等）的新版本已迁移到 .NET 6+，留在 Framework 会导致依赖锁死在旧版本
+- 新 C# 语言特性（模式匹配、nullable reference types、record 等）提升代码质量和开发效率
+- 性能更优，尤其大文件 diff 场景受益明显
+- WPF 在 .NET 8 上完全支持，API 兼容性极高，迁移成本可控
 
-如果选择升级到 .NET 8：
-- 必须使用 Self-Contained 发布（`--self-contained true -p:PublishSingleFile=true`）
-- 安装包约 80-150MB
-- 部署方式变为"单个 exe 拷贝到共享目录"即可
+部署方案：
+- 使用 Self-Contained 发布（`--self-contained true -p:PublishSingleFile=true`）
+- 用户无需安装 .NET 运行时，单个 exe 或 MSI 分发
+- 安装包约 80-150MB，对桌面工具完全可接受
+- 团队 150 人统一 Windows 环境，推送到共享目录即可
+
+迁移要点：
+- 项目文件从传统 .csproj 转为 SDK-style 格式
+- packages.config 迁移为 PackageReference
+- NuGet 依赖全部升级到 .NET 8 兼容版本
+- .vdproj 安装项目需替换为其他方案（如 Inno Setup 或 dotnet publish 直接分发）
 
 ### 5.2 Excel 读写库
 

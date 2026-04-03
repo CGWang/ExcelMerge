@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NPOI.SS.UserModel;
 using NetDiff;
-using SKCore.Collection;
+
 
 namespace ExcelMerge
 {

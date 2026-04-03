@@ -4,28 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ExcelMerge is a GUI diff tool for Excel files (.xls, .xlsx, .csv, .tsv), built with C# / WPF on .NET Framework 4.5.2. Forked from skanmera/ExcelMerge (MIT License). The goal is secondary development to add SVN (TortoiseSVN) integration, merge capabilities, and improved diff accuracy for a ~150-person team.
+ExcelMerge is a GUI diff tool for Excel files (.xls, .xlsx, .csv, .tsv), built with C# / WPF. Forked from skanmera/ExcelMerge (MIT License), originally targeting .NET Framework 4.5.2 — upgrading to .NET 8 (LTS) as part of Phase 1 modernization. The goal is secondary development to add SVN (TortoiseSVN) integration, merge capabilities, and improved diff accuracy for a ~150-person Unity game team.
 
 The development plan is documented in `.claude/EXCEL_MERGE_DEV_PLAN.md` (in Chinese).
 
 ## Build Commands
 
 ```bash
-# Build entire solution (requires MSBuild / Visual Studio)
-msbuild ExcelMerge.sln /p:Configuration=Debug /p:Platform="Any CPU"
+# Build entire solution
+dotnet build ExcelMerge.sln
 
 # Build release
-msbuild ExcelMerge.sln /p:Configuration=Release /p:Platform="Any CPU"
+dotnet build ExcelMerge.sln -c Release
 
-# Restore NuGet packages (if needed before build)
-nuget restore ExcelMerge.sln
+# Run diff algorithm tests (NetDiff.Test — 31 MSTest tests)
+dotnet test NetDiff/NetDiff.Test/NetDiff.Test.csproj
 
-# Run diff algorithm tests (NetDiff.Test project)
-# Uses MSTest — run via vstest.console or Visual Studio Test Explorer
-vstest.console NetDiff/NetDiff.Test/bin/Debug/NetDiff.Test.dll
+# Publish self-contained single-file exe
+dotnet publish ExcelMerge.GUI/ExcelMerge.GUI.csproj -c Release --self-contained -p:PublishSingleFile=true
 ```
-
-No custom build scripts exist. The installer project (ExcelMerge.Installer.vdproj) requires the legacy Visual Studio Setup Project extension.
 
 ## Architecture
 
@@ -52,11 +49,12 @@ No custom build scripts exist. The installer project (ExcelMerge.Installer.vdpro
 
 ### Key Dependencies
 
-- **NPOI 2.3.0** — Excel file reading (does NOT require Microsoft Excel installed)
-- **Prism.Wpf 6.3.0 + Unity 4.0.1** — MVVM framework and DI container
-- **CommandLineParser 1.9.71** — CLI argument parsing
-- **YamlDotNet 4.2.1** — Settings persistence
-- **Extended.Wpf.Toolkit 3.2.0** — AvalonDock and WPF controls
+- **NPOI 2.7.2** — Excel file reading (does NOT require Microsoft Excel installed)
+- **Prism.Core 9.0.537** — MVVM base classes (BindableBase, DelegateCommand)
+- **CommandLineParser 2.9.1** — CLI argument parsing (verb-based API)
+- **YamlDotNet 16.3.0** — Settings persistence
+- **Extended.Wpf.Toolkit 4.6.1** — IntegerUpDown and ColorPicker controls
+- **Microsoft.Xaml.Behaviors.Wpf 1.1.135** — WPF behaviors (replaces System.Windows.Interactivity)
 
 ### Data Model
 
