@@ -9,6 +9,9 @@ namespace ExcelMerge.GUI.Settings
     [Serializable]
     public class Setting<T> : SerializableBindableBase, ISetting<T> where T : Setting<T>
     {
+        [ThreadStatic]
+        private static bool _isCloning;
+
         [YamlIgnore, IgnoreEqual]
         public Setting<T> PreviousSetting { get; protected set; }
 
@@ -23,12 +26,21 @@ namespace ExcelMerge.GUI.Settings
 
         public Setting()
         {
-            PreviousSetting = DeepClone();
+            if (!_isCloning)
+                PreviousSetting = DeepClone();
         }
 
         public virtual T DeepClone()
         {
-            return SerializationUtility.DeepClone(this as T);
+            _isCloning = true;
+            try
+            {
+                return SerializationUtility.DeepClone(this as T);
+            }
+            finally
+            {
+                _isCloning = false;
+            }
         }
 
         public virtual bool Ensure(bool isChanged = false)

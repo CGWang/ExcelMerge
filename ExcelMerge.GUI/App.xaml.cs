@@ -22,14 +22,30 @@ namespace ExcelMerge.GUI
 
         protected override void OnStartup(StartupEventArgs e)
         {
-            Setting = ApplicationSetting.Load();
-            Setting.EnsureCulture();
-            UpdateResourceCulture();
-
-            if (Setting.Ensure())
-                Setting.Save();
-
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            DispatcherUnhandledException += (s, de) =>
+            {
+                var msg = $"{de.Exception.Message}\n{de.Exception.StackTrace}";
+                if (de.Exception.InnerException != null)
+                    msg += $"\n\nInner: {de.Exception.InnerException.Message}\n{de.Exception.InnerException.StackTrace}";
+                MessageBox.Show(msg, "An error occurred.", MessageBoxButton.OK);
+                de.Handled = false;
+            };
+
+            try
+            {
+                Setting = ApplicationSetting.Load();
+                Setting.EnsureCulture();
+                UpdateResourceCulture();
+
+                if (Setting.Ensure())
+                    Setting.Save();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load settings:\n{ex.Message}\n{ex.StackTrace}", "Startup Error");
+                Setting = new ApplicationSetting();
+            }
 
             base.OnStartup(e);
 
