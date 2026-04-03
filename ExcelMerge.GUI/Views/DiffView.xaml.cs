@@ -95,6 +95,9 @@ namespace ExcelMerge.GUI.Views
             config.SrcSheetIndex = SrcSheetCombobox.SelectedIndex;
             config.DstSheetIndex = DstSheetCombobox.SelectedIndex;
             config.CompareFormula = CompareFormulaCheckbox.IsChecked == true;
+            config.IgnoreWhitespace = IgnoreWhitespaceCheckbox.IsChecked == true;
+            if (double.TryParse(NumericPrecisionTextBox.Text, out var precisionVal))
+                config.NumericPrecision = precisionVal;
 
             if (srcFileSetting != null)
             {
@@ -414,6 +417,9 @@ namespace ExcelMerge.GUI.Views
                 diffConfig.SrcSheetIndex = Math.Max(SrcSheetCombobox.SelectedIndex, 0);
                 diffConfig.DstSheetIndex = Math.Max(DstSheetCombobox.SelectedIndex, 0);
                 diffConfig.CompareFormula = CompareFormulaCheckbox.IsChecked == true;
+                diffConfig.IgnoreWhitespace = IgnoreWhitespaceCheckbox.IsChecked == true;
+                if (double.TryParse(NumericPrecisionTextBox.Text, out var precisionFallback))
+                    diffConfig.NumericPrecision = precisionFallback;
             }
 
             return Tuple.Create(srcSetting, dstSetting);
@@ -731,6 +737,11 @@ namespace ExcelMerge.GUI.Views
         }
 
         private void CompareFormulaCheckbox_Changed(object sender, RoutedEventArgs e)
+        {
+            ExecuteDiff();
+        }
+
+        private void IgnoreRulesChanged(object sender, RoutedEventArgs e)
         {
             ExecuteDiff();
         }

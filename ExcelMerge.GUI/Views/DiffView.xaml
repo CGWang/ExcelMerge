@@ -226,6 +226,22 @@
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
                 <CheckBox x:Name="CompareFormulaCheckbox" Content="Formula" Margin="4,2"
                           Checked="CompareFormulaCheckbox_Changed" Unchecked="CompareFormulaCheckbox_Changed"/>
+                <CheckBox x:Name="IgnoreWhitespaceCheckbox" Content="Trim" Margin="4,2"
+                          ToolTip="Ignore leading/trailing whitespace"
+                          Checked="IgnoreRulesChanged" Unchecked="IgnoreRulesChanged"/>
+              </StackPanel>
+            </DockPanel>
+          </Border>
+
+          <!--── Group: Tolerance ──-->
+          <Border Style="{StaticResource ToolbarGroup}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Bottom" Text="Tolerance" HorizontalAlignment="Center"
+                         FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,2"/>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+                <TextBox x:Name="NumericPrecisionTextBox" Width="50" Margin="4,2" Text="0"
+                         ToolTip="Numeric precision tolerance (0=exact)"
+                         LostFocus="IgnoreRulesChanged"/>
               </StackPanel>
             </DockPanel>
           </Border>

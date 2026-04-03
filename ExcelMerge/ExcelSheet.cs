@@ -128,7 +128,8 @@ namespace ExcelMerge
 
             var option = new DiffOption<ExcelRow>();
             option.EqualityComparer =
-                new RowComparer(new HashSet<int>(columnStatusMap.Where(i => i.Value != ExcelColumnStatus.None).Select(i => i.Key)), config.CompareFormula);
+                new RowComparer(new HashSet<int>(columnStatusMap.Where(i => i.Value != ExcelColumnStatus.None).Select(i => i.Key)),
+                    config.CompareFormula, config.IgnoreWhitespace, config.NumericPrecision);
 
             foreach (var row in src.Rows.Values)
             {
@@ -195,7 +196,7 @@ namespace ExcelMerge
             }
 
             var sheetDiff = new ExcelSheetDiff();
-            DiffCells(resultArray, sheetDiff, columnStatusMap, config.CompareFormula);
+            DiffCells(resultArray, sheetDiff, columnStatusMap, config);
 
             return sheetDiff;
         }
@@ -262,17 +263,17 @@ namespace ExcelMerge
         }
 
         private static void DiffCells(
-            IEnumerable<DiffResult<ExcelRow>> results, ExcelSheetDiff sheetDiff, Dictionary<int, ExcelColumnStatus> columnStatusMap, bool compareFormula = false)
+            IEnumerable<DiffResult<ExcelRow>> results, ExcelSheetDiff sheetDiff, Dictionary<int, ExcelColumnStatus> columnStatusMap, ExcelSheetDiffConfig config)
         {
             foreach (var result in results)
             {
                 switch (result.Status)
                 {
                     case DiffStatus.Equal:
-                        DiffCellsCaseEqual(result, sheetDiff, columnStatusMap, compareFormula);
+                        DiffCellsCaseEqual(result, sheetDiff, columnStatusMap, config);
                         break;
                     case DiffStatus.Modified:
-                        DiffCellsCaseEqual(result, sheetDiff, columnStatusMap, compareFormula);
+                        DiffCellsCaseEqual(result, sheetDiff, columnStatusMap, config);
                         break;
                     case DiffStatus.Deleted:
                         DiffCellsCaseDeleted(result, sheetDiff, columnStatusMap);
@@ -290,6 +291,30 @@ namespace ExcelMerge
                 return cell.Formula;
 
             return cell.Value;
+        }
+
+        private static bool AreCellsEqual(ExcelCell src, ExcelCell dst, bool compareFormula, bool ignoreWhitespace, double numericPrecision)
+        {
+            var srcVal = GetCompareValue(src, compareFormula);
+            var dstVal = GetCompareValue(dst, compareFormula);
+
+            if (ignoreWhitespace)
+            {
+                srcVal = srcVal.Trim();
+                dstVal = dstVal.Trim();
+            }
+
+            if (srcVal.Equals(dstVal))
+                return true;
+
+            if (numericPrecision > 0
+                && double.TryParse(srcVal, out var srcNum)
+                && double.TryParse(dstVal, out var dstNum))
+            {
+                return Math.Abs(srcNum - dstNum) <= numericPrecision;
+            }
+
+            return false;
         }
 
         private static IEnumerable<Tuple<ExcelCell, ExcelCell>> EqualizeColumnCount(
@@ -310,7 +335,7 @@ namespace ExcelMerge
         }
 
         private static void DiffCellsCaseEqual(
-            DiffResult<ExcelRow> result, ExcelSheetDiff sheetDiff, Dictionary<int, ExcelColumnStatus> columnStatusMap, bool compareFormula = false)
+            DiffResult<ExcelRow> result, ExcelSheetDiff sheetDiff, Dictionary<int, ExcelColumnStatus> columnStatusMap, ExcelSheetDiffConfig config)
         {
             var row = sheetDiff.CreateRow();
 
@@ -323,9 +348,8 @@ namespace ExcelMerge
 
                 if (srcCell != null && dstCell != null)
                 {
-                    var srcCompareValue = GetCompareValue(srcCell, compareFormula);
-                    var dstCompareValue = GetCompareValue(dstCell, compareFormula);
-                    var status = srcCompareValue.Equals(dstCompareValue) ? ExcelCellStatus.None : ExcelCellStatus.Modified;
+                    var status = AreCellsEqual(srcCell, dstCell, config.CompareFormula, config.IgnoreWhitespace, config.NumericPrecision)
+                        ? ExcelCellStatus.None : ExcelCellStatus.Modified;
                     if (columnStatusMap[columnIndex] == ExcelColumnStatus.Deleted)
                         status = ExcelCellStatus.Removed;
                     else if (columnStatusMap[columnIndex] == ExcelColumnStatus.Inserted)

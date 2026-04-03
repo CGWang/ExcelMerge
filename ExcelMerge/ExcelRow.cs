@@ -65,11 +65,16 @@ namespace ExcelMerge
     {
         public HashSet<int> IgnoreColumns { get; private set; }
         public bool CompareFormula { get; private set; }
+        public bool IgnoreWhitespace { get; private set; }
+        public double NumericPrecision { get; private set; }
 
-        public RowComparer(HashSet<int> ignoreColumns, bool compareFormula = false)
+        public RowComparer(HashSet<int> ignoreColumns, bool compareFormula = false,
+                           bool ignoreWhitespace = false, double numericPrecision = 0)
         {
             IgnoreColumns = ignoreColumns;
             CompareFormula = compareFormula;
+            IgnoreWhitespace = ignoreWhitespace;
+            NumericPrecision = numericPrecision;
         }
 
         public bool Equals(ExcelRow x, ExcelRow y)
@@ -83,13 +88,35 @@ namespace ExcelMerge
                 if (IgnoreColumns.Contains(i))
                     continue;
 
-                var xVal = GetCellCompareValue(x.Cells[i]);
-                var yVal = GetCellCompareValue(y.Cells[i]);
-                if (xVal != yVal)
+                if (!AreCellsEqual(x.Cells[i], y.Cells[i]))
                     return false;
             }
 
             return true;
+        }
+
+        private bool AreCellsEqual(ExcelCell a, ExcelCell b)
+        {
+            var aVal = GetCellCompareValue(a);
+            var bVal = GetCellCompareValue(b);
+
+            if (IgnoreWhitespace)
+            {
+                aVal = aVal.Trim();
+                bVal = bVal.Trim();
+            }
+
+            if (aVal == bVal)
+                return true;
+
+            if (NumericPrecision > 0
+                && double.TryParse(aVal, out var aNum)
+                && double.TryParse(bVal, out var bNum))
+            {
+                return Math.Abs(aNum - bNum) <= NumericPrecision;
+            }
+
+            return false;
         }
 
         public int GetHashCode(ExcelRow obj)
@@ -100,10 +127,26 @@ namespace ExcelMerge
                 if (IgnoreColumns.Contains(i))
                     continue;
 
-                hash = hash * 13 + GetCellCompareValue(obj.Cells[i]).GetHashCode();
+                hash = hash * 13 + GetNormalizedHashValue(obj.Cells[i]).GetHashCode();
             }
 
             return hash;
+        }
+
+        private string GetNormalizedHashValue(ExcelCell cell)
+        {
+            var value = GetCellCompareValue(cell);
+
+            if (IgnoreWhitespace)
+                value = value.Trim();
+
+            if (NumericPrecision > 0 && double.TryParse(value, out var num))
+            {
+                var rounded = Math.Round(num / NumericPrecision) * NumericPrecision;
+                return rounded.ToString("R");
+            }
+
+            return value;
         }
 
         private string GetCellCompareValue(ExcelCell cell)

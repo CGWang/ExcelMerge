@@ -13,5 +13,7 @@ namespace ExcelMerge
         public int SrcHeaderIndex { get; set; }
         public int DstHeaderIndex { get; set; }
         public bool CompareFormula { get; set; }
+        public bool IgnoreWhitespace { get; set; }
+        public double NumericPrecision { get; set; }
     }
 }
