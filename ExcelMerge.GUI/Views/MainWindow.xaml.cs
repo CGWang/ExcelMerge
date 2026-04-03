@@ -16,9 +16,16 @@ namespace ExcelMerge.GUI.Views
         {
             InitializeComponent();
 
-            var host = new PowerShellHost();
-            Console.PowerShellHost = host;
-            host.Open();
+            try
+            {
+                var host = new PowerShellHost();
+                Console.PowerShellHost = host;
+                host.Open();
+            }
+            catch
+            {
+                // PowerShell console is optional; don't block startup if it fails
+            }
         }
 
         private void MenuItem_Loaded(object sender, RoutedEventArgs e)

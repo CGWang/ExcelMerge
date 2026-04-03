@@ -10,6 +10,11 @@ namespace ExcelMerge.GUI.ValueConverters
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (values == null || values.Length < 2 ||
+                values[0] == null || values[0] == DependencyProperty.UnsetValue ||
+                values[1] == null || values[1] == DependencyProperty.UnsetValue)
+                return null;
+
             var obj = values[0];
             var propertyName = values[1] as string;
             var propertyInfo = obj.GetType().GetProperties().FirstOrDefault(p => p.Name == propertyName);
