@@ -20,8 +20,9 @@ namespace ExcelMerge
                     var cell = row.GetCell(columnIndex);
                     var stringValue = ExcelUtility.GetCellStringValue(cell);
                     var formula = ExcelUtility.GetCellFormula(cell);
+                    var comment = ExcelUtility.GetCellComment(cell);
 
-                    cells.Add(new ExcelCell(stringValue, formula, columnIndex, rowIndex));
+                    cells.Add(new ExcelCell(stringValue, formula, comment, columnIndex, rowIndex));
                 }
 
                 yield return new ExcelRow(actualRowIndex++, cells);

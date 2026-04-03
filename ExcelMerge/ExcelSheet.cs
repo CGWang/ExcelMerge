@@ -295,6 +295,10 @@ namespace ExcelMerge
 
         private static bool AreCellsEqual(ExcelCell src, ExcelCell dst, bool compareFormula, bool ignoreWhitespace, double numericPrecision)
         {
+            // Comments must also match for cells to be considered equal
+            if (src.Comment != dst.Comment)
+                return false;
+
             var srcVal = GetCompareValue(src, compareFormula);
             var dstVal = GetCompareValue(dst, compareFormula);
 

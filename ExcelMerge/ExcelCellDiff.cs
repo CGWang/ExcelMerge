@@ -7,6 +7,7 @@
         public ExcelCell SrcCell { get; }
         public ExcelCell DstCell { get; }
         public ExcelCellStatus Status { get; }
+        public bool HasCommentDiff => SrcCell.Comment != DstCell.Comment;
 
         public ExcelCellDiff(int columnIndex, int rowIndex, ExcelCell src, ExcelCell dst, ExcelCellStatus status)
         {

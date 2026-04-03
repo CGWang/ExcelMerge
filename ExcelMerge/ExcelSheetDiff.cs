@@ -26,6 +26,7 @@ namespace ExcelMerge
             var removedRowCount = 0;
             var modifiedRowCount = 0;
             var modifiedCellCount = 0;
+            var commentDiffCount = 0;
             foreach (var row in Rows)
             {
                 if (row.Value.IsAdded())
@@ -37,6 +38,7 @@ namespace ExcelMerge
                     modifiedRowCount++;
 
                 modifiedCellCount += row.Value.ModifiedCellCount;
+                commentDiffCount += row.Value.CommentDiffCount;
             }
 
             return new ExcelSheetDiffSummary
@@ -45,6 +47,7 @@ namespace ExcelMerge
                 RemovedRowCount = removedRowCount,
                 ModifiedRowCount = modifiedRowCount,
                 ModifiedCellCount = modifiedCellCount,
+                CommentDiffCount = commentDiffCount,
             };
         }
     }

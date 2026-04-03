@@ -62,6 +62,14 @@ namespace ExcelMerge
             return string.Empty;
         }
 
+        public static string GetCellComment(ICell cell)
+        {
+            if (cell?.CellComment?.String != null)
+                return cell.CellComment.String.ToString();
+
+            return string.Empty;
+        }
+
         public static void CreateWorkbook(string path, ExcelWorkbookType workbookType)
         {
             if (!ValidateExtension(path, workbookType))

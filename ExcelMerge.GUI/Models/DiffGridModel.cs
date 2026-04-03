@@ -15,6 +15,7 @@ namespace ExcelMerge.GUI.Models
         private Color? decorationColor = null;
         private CellDecoration decoration = CellDecoration.None;
         private string toolTipText = string.Empty;
+        private TooltipVisibilityMode tooltipVisibility = TooltipVisibilityMode.OnlyWhenTrimmed;
         private Dictionary<int, int> rowIndexMap = new Dictionary<int, int>();
 
         public override int ColumnCount
@@ -49,7 +50,7 @@ namespace ExcelMerge.GUI.Models
 
         public override TooltipVisibilityMode ToolTipVisibility
         {
-            get { return TooltipVisibilityMode.OnlyWhenTrimmed; }
+            get { return tooltipVisibility; }
         }
 
         public int ColumnHeaderIndex { get; private set; }
@@ -59,6 +60,7 @@ namespace ExcelMerge.GUI.Models
         public MergeResult MergeResult { get; set; }
         public bool CompareFormula { get; set; }
 
+        private static readonly Color CommentDiffColor = Color.FromRgb(255, 255, 200); // Light yellow for comment-only diff
         private static readonly Color MergedCellColor = Color.FromRgb(144, 238, 144); // LightGreen
         private static readonly Color RowIndicatorColor = Color.FromRgb(180, 40, 40);
         private static readonly Color ModifiedColumnHeaderColor = Color.FromRgb(255, 220, 220);
@@ -302,6 +304,21 @@ namespace ExcelMerge.GUI.Models
             cell.backgroundColor = GetColor(status);
             cell.decoration = CellDecoration.None;
             cell.decorationColor = null;
+            cell.tooltipVisibility = TooltipVisibilityMode.OnlyWhenTrimmed;
+
+            // Comment diff indicator: light yellow for comment-only diffs, tooltip for all comment diffs
+            if (cellDiff != null && cellDiff.HasCommentDiff)
+            {
+                var commentInfo = $"Comment:\n[Src] {cellDiff.SrcCell.Comment}\n[Dst] {cellDiff.DstCell.Comment}";
+                toolTipText = string.IsNullOrEmpty(toolTipText) ? commentInfo : toolTipText + "\n\n" + commentInfo;
+
+                // Always show tooltip when there's a comment diff
+                cell.tooltipVisibility = TooltipVisibilityMode.Always;
+
+                // Only apply comment-only color when value/formula is unchanged
+                if (cell.backgroundColor == null)
+                    cell.backgroundColor = CommentDiffColor;
+            }
 
             // Merge decision overlay
             if (MergeResult != null && cellDiff != null && MergeResult.HasDecision(cellDiff.RowIndex, cellDiff.ColumnIndex))

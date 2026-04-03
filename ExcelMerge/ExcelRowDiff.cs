@@ -42,6 +42,11 @@ namespace ExcelMerge
             get { return Cells.Count(c => c.Value.Status != ExcelCellStatus.None); }
         }
 
+        public int CommentDiffCount
+        {
+            get { return Cells.Count(c => c.Value.HasCommentDiff); }
+        }
+
 
         // TODO: Add row status field and implemnt UpdateStaus method.
     }

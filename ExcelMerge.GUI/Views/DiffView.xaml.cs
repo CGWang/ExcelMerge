@@ -10,12 +10,10 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using FastWpfGrid;
-using NetDiff;
 using ExcelMerge.GUI.Utilities;
 using ExcelMerge.GUI.ViewModels;
 using ExcelMerge.GUI.Settings;
 using ExcelMerge.GUI.Models;
-using ExcelMerge.GUI.Styles;
 
 namespace ExcelMerge.GUI.Views
 {
@@ -189,12 +187,16 @@ namespace ExcelMerge.GUI.Views
             if (SrcDataGrid.Model == null || DstDataGrid.Model == null)
                 return;
 
-            var srcValue =
-                (SrcDataGrid.Model as DiffGridModel).GetCellText(SrcDataGrid.CurrentCell.Row.Value, SrcDataGrid.CurrentCell.Column.Value, true);
-            var dstValue =
-                (DstDataGrid.Model as DiffGridModel).GetCellText(DstDataGrid.CurrentCell.Row.Value, DstDataGrid.CurrentCell.Column.Value, true);
+            var srcModel = SrcDataGrid.Model as DiffGridModel;
+            var dstModel = DstDataGrid.Model as DiffGridModel;
 
-            UpdateValueDiff(srcValue, dstValue);
+            var srcValue = srcModel.GetCellText(SrcDataGrid.CurrentCell.Row.Value, SrcDataGrid.CurrentCell.Column.Value, true);
+            var dstValue = dstModel.GetCellText(DstDataGrid.CurrentCell.Row.Value, DstDataGrid.CurrentCell.Column.Value, true);
+
+            ExcelCellDiff cellDiff;
+            srcModel.TryGetCellDiffPublic(SrcDataGrid.CurrentCell.Row.Value, SrcDataGrid.CurrentCell.Column.Value, out cellDiff);
+
+            UpdateValueDiff(srcValue, dstValue, cellDiff);
 
             if (App.Instance.Setting.AlwaysExpandCellDiff)
             {
@@ -222,134 +224,67 @@ namespace ExcelMerge.GUI.Views
             return textRange.Text;
         }
 
-        private IEnumerable<DiffResult<string>> DiffCellValue(IEnumerable<string> src, IEnumerable<string> dst)
-        {
-            var r = DiffUtil.Diff(src, dst);
-            r = DiffUtil.Order(r, DiffOrderType.LazyDeleteFirst);
-            return DiffUtil.OptimizeCaseDeletedFirst(r);
-        }
-
-        private string ConvertWhiteSpaces(string str)
-        {
-            return new string(str.Select(c =>
-            {
-                if (Encoding.UTF8.GetByteCount(c.ToString()) == 1)
-                    return ' ';
-                else
-                    return '　';
-
-            }).ToArray());
-        }
-
-        private string ConvertWhiteSpaces(char c)
-        {
-            if (Encoding.UTF8.GetByteCount(c.ToString()) == 1)
-                return " ";
-            else
-                return "　";
-        }
-
-        private void DiffModifiedLine(IEnumerable<DiffResult<char>> results, List<Tuple<string, Color?>> ranges, bool isSrc)
-        {
-            var splited = results.SplitByRegularity((items, current) => items.Last().Status.Equals(current.Status)).ToList();
-
-            foreach (var sr in splited)
-            {
-                var status = sr.First().Status;
-                if (status == DiffStatus.Equal)
-                {
-                    ranges.Add(Tuple.Create<string, Color?>(new string(sr.Select(r => r.Obj1).ToArray()), null));
-                }
-                else if (status == DiffStatus.Modified)
-                {
-                    var str = new string(sr.Select(r => isSrc ? r.Obj1 : r.Obj2).ToArray());
-                    ranges.Add(Tuple.Create<string, Color?>(str, EMColor.LightOrange));
-                }
-                else if (status == DiffStatus.Deleted)
-                {
-                    var str = new string(sr.Select(r => r.Obj1).ToArray());
-                    ranges.Add(Tuple.Create<string, Color?>(str, EMColor.LightGray));
-                }
-                else if (status == DiffStatus.Inserted)
-                {
-                    var str = new string(sr.Select(r => r.Obj2).ToArray());
-                    ranges.Add(Tuple.Create<string, Color?>(str, EMColor.Orange));
-                }
-            }
-
-            ranges.Add(Tuple.Create<string, Color?>("\n", null));
-        }
-
-        private void DiffEqualLine(DiffResult<string> lineDiffResult, List<Tuple<string, Color?>> ranges)
-        {
-            ranges.Add(Tuple.Create<string, Color?>(lineDiffResult.Obj1, null));
-            ranges.Add(Tuple.Create<string, Color?>("\n", null));
-        }
-
-        private void DiffDeletedLine(DiffResult<string> lineDiffResult, List<Tuple<string, Color?>> ranges, bool isSrc)
-        {
-            var str = isSrc ? lineDiffResult.Obj1 : ConvertWhiteSpaces(lineDiffResult.Obj1.ToString());
-            ranges.Add(Tuple.Create<string, Color?>(str, isSrc ? EMColor.LightGray : EMColor.LightGray));
-            ranges.Add(Tuple.Create<string, Color?>("\n", null));
-        }
-
-        private void DiffInsertedLine(DiffResult<string> lineDiffResult, List<Tuple<string, Color?>> ranges, bool isSrc)
-        {
-            var str = isSrc ? ConvertWhiteSpaces(lineDiffResult.Obj2) : lineDiffResult.Obj2;
-            ranges.Add(Tuple.Create<string, Color?>(str, isSrc ? EMColor.LightGray : EMColor.Orange));
-            ranges.Add(Tuple.Create<string, Color?>("\n", null));
-        }
-
-        private void UpdateValueDiff(string srcValue, string dstValue)
+        private void UpdateValueDiff(string srcValue, string dstValue, ExcelCellDiff cellDiff = null)
         {
             SrcValueTextBox.Document.Blocks.First().ContentStart.Paragraph.Inlines.Clear();
             DstValueTextBox.Document.Blocks.First().ContentStart.Paragraph.Inlines.Clear();
 
-            var srcLines = srcValue.Split('\n').Select(s => s.TrimEnd());
-            var dstLines = dstValue.Split('\n').Select(s => s.TrimEnd());
+            var srcParagraph = SrcValueTextBox.Document.Blocks.First().ContentStart.Paragraph;
+            var dstParagraph = DstValueTextBox.Document.Blocks.First().ContentStart.Paragraph;
 
-            var lineDiffResults = DiffCellValue(srcLines, dstLines).ToList();
+            var modifiedColor = App.Instance.Setting.ModifiedColor;
+            var highlightBrush = new SolidColorBrush(
+                Color.FromArgb(180, modifiedColor.R, modifiedColor.G, modifiedColor.B));
 
-            var srcRange = new List<Tuple<string, Color?>>();
-            var dstRange = new List<Tuple<string, Color?>>();
-            foreach (var lineDiffResult in lineDiffResults)
+            if (!string.IsNullOrEmpty(srcValue) && !string.IsNullOrEmpty(dstValue) && srcValue != dstValue)
             {
-                if (lineDiffResult.Status == DiffStatus.Equal)
-                {
-                    DiffEqualLine(lineDiffResult, srcRange);
-                    DiffEqualLine(lineDiffResult, dstRange);
-                }
-                else if (lineDiffResult.Status == DiffStatus.Modified)
-                {
-                    var charDiffResults = DiffUtil.Diff(lineDiffResult.Obj1, lineDiffResult.Obj2);
-                    charDiffResults = DiffUtil.Order(charDiffResults, DiffOrderType.LazyDeleteFirst);
-                    charDiffResults = DiffUtil.OptimizeCaseDeletedFirst(charDiffResults);
+                // Both sides have values and they differ: use character-level diff
+                var srcSegments = TextDiffUtil.ComputeInlineDiffSrc(srcValue, dstValue);
+                var dstSegments = TextDiffUtil.ComputeInlineDiff(srcValue, dstValue);
 
-                    DiffModifiedLine(charDiffResults.Where(r => r.Status != DiffStatus.Inserted), srcRange, true);
-                    DiffModifiedLine(charDiffResults.Where(r => r.Status != DiffStatus.Deleted), dstRange, false);
-                }
-                else if (lineDiffResult.Status == DiffStatus.Deleted)
+                foreach (var seg in srcSegments)
                 {
-                    DiffDeletedLine(lineDiffResult, srcRange, true);
-                    DiffDeletedLine(lineDiffResult, dstRange, false);
+                    var run = new Run(seg.Text);
+                    if (seg.IsModified)
+                        run.Background = highlightBrush;
+                    srcParagraph.Inlines.Add(run);
                 }
-                else if (lineDiffResult.Status == DiffStatus.Inserted)
+
+                foreach (var seg in dstSegments)
                 {
-                    DiffInsertedLine(lineDiffResult, srcRange, true);
-                    DiffInsertedLine(lineDiffResult, dstRange, false);
+                    var run = new Run(seg.Text);
+                    if (seg.IsModified)
+                        run.Background = highlightBrush;
+                    dstParagraph.Inlines.Add(run);
                 }
             }
-
-            foreach (var r in srcRange)
+            else
             {
-                var bc = r.Item2.HasValue ? new SolidColorBrush(r.Item2.Value) : new SolidColorBrush();
-                SrcValueTextBox.Document.Blocks.First().ContentStart.Paragraph.Inlines.Add(new Run(r.Item1) { Background = bc });
+                // Equal values, or one/both sides empty: show plain text
+                srcParagraph.Inlines.Add(new Run(srcValue));
+                dstParagraph.Inlines.Add(new Run(dstValue));
             }
 
-            foreach (var r in dstRange)
+            // Append comment text in italic gray if the cell has a comment
+            if (cellDiff != null)
             {
-                var bc = r.Item2.HasValue ? new SolidColorBrush(r.Item2.Value) : new SolidColorBrush();
-                DstValueTextBox.Document.Blocks.First().ContentStart.Paragraph.Inlines.Add(new Run(r.Item1) { Background = bc });
+                if (!string.IsNullOrEmpty(cellDiff.SrcCell.Comment))
+                {
+                    srcParagraph.Inlines.Add(new Run("\n[Comment] " + cellDiff.SrcCell.Comment)
+                    {
+                        Foreground = Brushes.Gray,
+                        FontStyle = FontStyles.Italic
+                    });
+                }
+
+                if (!string.IsNullOrEmpty(cellDiff.DstCell.Comment))
+                {
+                    dstParagraph.Inlines.Add(new Run("\n[Comment] " + cellDiff.DstCell.Comment)
+                    {
+                        Foreground = Brushes.Gray,
+                        FontStyle = FontStyles.Italic
+                    });
+                }
             }
         }
 
