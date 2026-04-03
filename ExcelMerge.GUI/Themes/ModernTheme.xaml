@@ -215,34 +215,32 @@
                         <!-- === Role: TopLevelHeader === -->
                         <Trigger Property="Role" Value="TopLevelHeader">
                             <Setter TargetName="TopLevelBorder" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="TopLevelPopup" Property="Visibility" Value="Visible"/>
                             <Setter TargetName="SubItemBorder" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="SubHeaderBorder" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="SubHeaderPopup" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="SubHeaderPopup" Property="IsOpen" Value="False"/>
                         </Trigger>
                         <!-- === Role: TopLevelItem === -->
                         <Trigger Property="Role" Value="TopLevelItem">
                             <Setter TargetName="TopLevelBorder" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="TopLevelPopup" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="SubItemBorder" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="SubHeaderBorder" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="SubHeaderPopup" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="TopLevelPopup" Property="IsOpen" Value="False"/>
+                            <Setter TargetName="SubHeaderPopup" Property="IsOpen" Value="False"/>
                         </Trigger>
                         <!-- === Role: SubmenuItem === -->
                         <Trigger Property="Role" Value="SubmenuItem">
                             <Setter TargetName="TopLevelBorder" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="TopLevelPopup" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="SubItemBorder" Property="Visibility" Value="Visible"/>
                             <Setter TargetName="SubHeaderBorder" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="SubHeaderPopup" Property="Visibility" Value="Collapsed"/>
+                            <Setter TargetName="TopLevelPopup" Property="IsOpen" Value="False"/>
+                            <Setter TargetName="SubHeaderPopup" Property="IsOpen" Value="False"/>
                         </Trigger>
                         <!-- === Role: SubmenuHeader === -->
                         <Trigger Property="Role" Value="SubmenuHeader">
                             <Setter TargetName="TopLevelBorder" Property="Visibility" Value="Collapsed"/>
-                            <Setter TargetName="TopLevelPopup" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="SubItemBorder" Property="Visibility" Value="Collapsed"/>
                             <Setter TargetName="SubHeaderBorder" Property="Visibility" Value="Visible"/>
-                            <Setter TargetName="SubHeaderPopup" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="TopLevelPopup" Property="IsOpen" Value="False"/>
                         </Trigger>
 
                         <!-- Top-level hover -->
