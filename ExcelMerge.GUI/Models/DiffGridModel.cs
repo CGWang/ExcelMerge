@@ -56,6 +56,9 @@ namespace ExcelMerge.GUI.Models
         public int RowHeaderIndex { get; private set; } = -1;
         public DiffType DiffType { get; private set; }
         public ExcelSheetDiff SheetDiff { get; private set; }
+        public MergeResult MergeResult { get; set; }
+
+        private static readonly Color MergedCellColor = Color.FromRgb(144, 238, 144); // LightGreen
 
         public DiffGridModel(ExcelSheetDiff sheetDiff, DiffType type) : base()
         {
@@ -111,6 +114,11 @@ namespace ExcelMerge.GUI.Models
             return GetCellText(address.Row.Value, address.Column.Value, true);
         }
 
+        public bool TryGetCellDiffPublic(int row, int column, out ExcelCellDiff cellDiff)
+        {
+            return TryGetCellDiff(row, column, out cellDiff, true);
+        }
+
         private bool TryGetCellDiff(int row, int column, out ExcelCellDiff cellDiff, bool direct = false)
         {
             cellDiff = null;
@@ -132,6 +140,14 @@ namespace ExcelMerge.GUI.Models
 
         private string GetCellText(ExcelCellDiff cellDiff)
         {
+            // If merge decision exists, show the chosen value
+            if (MergeResult != null)
+            {
+                var decision = MergeResult.GetDecision(cellDiff.RowIndex, cellDiff.ColumnIndex);
+                if (decision.HasValue)
+                    return decision.Value == MergeSide.Src ? cellDiff.SrcCell.Value : cellDiff.DstCell.Value;
+            }
+
             switch (cellDiff.Status)
             {
                 case ExcelCellStatus.None:
@@ -246,12 +262,21 @@ namespace ExcelMerge.GUI.Models
 
             cell.backgroundColor = GetColor(status) ?? cell.backgroundColor;
 
+            // Merge decision overlay
+            if (MergeResult != null && cellDiff != null && MergeResult.HasDecision(cellDiff.RowIndex, cellDiff.ColumnIndex))
+                cell.backgroundColor = MergedCellColor;
+
             return cell;
         }
 
         public override IFastGridCell GetCell(IFastGridView view, int row, int column)
         {
             return GetCell(view, row, column, false);
+        }
+
+        public int GetRealRowIndex(int visualRow)
+        {
+            return rowIndexMap.ContainsKey(visualRow) ? rowIndexMap[visualRow] : visualRow;
         }
 
         private FastGridCellAddress GetVisualCellAddress(FastGridCellAddress realCellAddress)

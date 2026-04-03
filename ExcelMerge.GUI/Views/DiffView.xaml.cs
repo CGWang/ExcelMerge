@@ -27,6 +27,7 @@ namespace ExcelMerge.GUI.Views
         private const string dstKey = "dst";
 
         private FastGridControl copyTargetGrid;
+        private MergeResult mergeResult;
 
         public DiffView()
         {
@@ -37,9 +38,6 @@ namespace ExcelMerge.GUI.Views
             App.Instance.OnSettingUpdated += OnApplicationSettingUpdated;
 
             SearchTextCombobox.ItemsSource = App.Instance.Setting.SearchHistory.ToList();
-
-            // In order to enable Ctrl + F immediately after startup.
-            ToolExpander.IsExpanded = true;
         }
 
         private DiffViewModel GetViewModel()
@@ -88,9 +86,6 @@ namespace ExcelMerge.GUI.Views
             DataGridEventDispatcher.Instance.DispatchParentLoadEvent(args);
 
             ExecuteDiff(isStartup: true);
-
-            // In order to enable Ctrl + F immediately after startup.
-            ToolExpander.IsExpanded = false;
         }
 
         private ExcelSheetDiffConfig CreateDiffConfig(FileSetting srcFileSetting, FileSetting dstFileSetting, bool isStartup)
@@ -474,8 +469,12 @@ namespace ExcelMerge.GUI.Views
                 MessageBox.Show(Properties.Resources.Msg_WarnSize);
 
             var diff = ExecuteDiff(srcSheet, dstSheet);
-            SrcDataGrid.Model = new DiffGridModel(diff, DiffType.Source);
-            DstDataGrid.Model = new DiffGridModel(diff, DiffType.Dest);
+            mergeResult = new MergeResult(diff);
+
+            var srcModel = new DiffGridModel(diff, DiffType.Source) { MergeResult = mergeResult };
+            var dstModel = new DiffGridModel(diff, DiffType.Dest) { MergeResult = mergeResult };
+            SrcDataGrid.Model = srcModel;
+            DstDataGrid.Model = dstModel;
 
             args = new DiffViewEventArgs<FastGridControl>(SrcDataGrid, container);
             DataGridEventDispatcher.Instance.DispatchFileSettingUpdateEvent(args, srcFileSetting);
@@ -1011,6 +1010,23 @@ namespace ExcelMerge.GUI.Views
             HideSearchOverlay();
         }
 
+        private void FindButton_Click(object sender, RoutedEventArgs e)
+        {
+            ShowSearchOverlay();
+        }
+
+        private void SearchTextCombobox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                    MovePrevMatchCell();
+                else
+                    MoveNextMatchCell();
+                e.Handled = true;
+            }
+        }
+
         #endregion
 
         private void CopyToClipboardSelectedCells(string separator)
@@ -1278,6 +1294,99 @@ namespace ExcelMerge.GUI.Views
         private void CopyAsCsv_Click(object sender, RoutedEventArgs e)
         {
             CopyToClipboardSelectedCells(",");
+        }
+
+        private void AcceptSrc_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyMergeToSelectedCells(MergeSide.Src);
+        }
+
+        private void AcceptDst_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyMergeToSelectedCells(MergeSide.Dst);
+        }
+
+        private void AcceptSrcRow_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyMergeToSelectedRows(MergeSide.Src);
+        }
+
+        private void AcceptDstRow_Click(object sender, RoutedEventArgs e)
+        {
+            ApplyMergeToSelectedRows(MergeSide.Dst);
+        }
+
+        private void ApplyMergeToSelectedCells(MergeSide side)
+        {
+            if (mergeResult == null || copyTargetGrid == null) return;
+
+            var model = copyTargetGrid.Model as DiffGridModel;
+            if (model == null) return;
+
+            foreach (var cell in copyTargetGrid.SelectedCells)
+            {
+                if (!cell.IsCell) continue;
+                ExcelCellDiff cellDiff;
+                if (model.TryGetCellDiffPublic(cell.Row.Value, cell.Column.Value, out cellDiff))
+                {
+                    if (side == MergeSide.Src)
+                        mergeResult.AcceptSrc(cellDiff.RowIndex, cellDiff.ColumnIndex);
+                    else
+                        mergeResult.AcceptDst(cellDiff.RowIndex, cellDiff.ColumnIndex);
+                }
+            }
+
+            SrcDataGrid.InvalidateAll();
+            DstDataGrid.InvalidateAll();
+        }
+
+        private void ApplyMergeToSelectedRows(MergeSide side)
+        {
+            if (mergeResult == null || copyTargetGrid == null) return;
+
+            var model = copyTargetGrid.Model as DiffGridModel;
+            if (model == null) return;
+
+            var rows = copyTargetGrid.SelectedCells
+                .Where(c => c.IsCell)
+                .Select(c => c.Row.Value)
+                .Distinct();
+
+            foreach (var row in rows)
+            {
+                var realRow = model.GetRealRowIndex(row);
+                if (side == MergeSide.Src)
+                    mergeResult.AcceptSrcRow(realRow);
+                else
+                    mergeResult.AcceptDstRow(realRow);
+            }
+
+            SrcDataGrid.InvalidateAll();
+            DstDataGrid.InvalidateAll();
+        }
+
+        private void SaveMergeButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (mergeResult == null || mergeResult.DecisionCount == 0)
+            {
+                MessageBox.Show(Properties.Resources.Msg_NoMergeDecisions, "ExcelMerge",
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Filter = "Excel Files|*.xlsx",
+                DefaultExt = ".xlsx",
+                FileName = "merged.xlsx"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                mergeResult.WriteToFile(dlg.FileName);
+                MessageBox.Show(string.Format(Properties.Resources.Msg_MergeSaved, dlg.FileName),
+                    "ExcelMerge", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
         }
     }
 }

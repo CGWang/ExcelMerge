@@ -500,4 +500,25 @@
   <data name="Word_Chinese" xml:space="preserve">
     <value>中文</value>
   </data>
+  <data name="ContextMenu_AcceptSrc" xml:space="preserve">
+    <value>采用左侧</value>
+  </data>
+  <data name="ContextMenu_AcceptDst" xml:space="preserve">
+    <value>采用右侧</value>
+  </data>
+  <data name="ContextMenu_AcceptSrcRow" xml:space="preserve">
+    <value>采用左侧整行</value>
+  </data>
+  <data name="ContextMenu_AcceptDstRow" xml:space="preserve">
+    <value>采用右侧整行</value>
+  </data>
+  <data name="Button_SaveMerge" xml:space="preserve">
+    <value>保存合并结果</value>
+  </data>
+  <data name="Msg_NoMergeDecisions" xml:space="preserve">
+    <value>尚未做出合并决策。请先右键单元格选择"采用左侧"或"采用右侧"。</value>
+  </data>
+  <data name="Msg_MergeSaved" xml:space="preserve">
+    <value>合并文件已保存到：{0}</value>
+  </data>
 </root>

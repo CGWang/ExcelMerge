@@ -104,7 +104,7 @@ namespace ExcelMerge.GUI.Properties {
                 return ResourceManager.GetString("ContextMenu_CopyAsCsv", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Copy as TSV に類似しているローカライズされた文字列を検索します。
         /// </summary>
@@ -691,7 +691,7 @@ namespace ExcelMerge.GUI.Properties {
                 return ResourceManager.GetString("Msg_WarnSize", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   All に類似しているローカライズされた文字列を検索します。
         /// </summary>
@@ -914,6 +914,40 @@ namespace ExcelMerge.GUI.Properties {
         public static string Word_Blank {
             get {
                 return ResourceManager.GetString("Word_Blank", resourceCulture);
+            }
+        }
+
+        public static string ContextMenu_AcceptSrc {
+            get { return ResourceManager.GetString("ContextMenu_AcceptSrc", resourceCulture); }
+        }
+
+        public static string ContextMenu_AcceptDst {
+            get { return ResourceManager.GetString("ContextMenu_AcceptDst", resourceCulture); }
+        }
+
+        public static string ContextMenu_AcceptSrcRow {
+            get { return ResourceManager.GetString("ContextMenu_AcceptSrcRow", resourceCulture); }
+        }
+
+        public static string ContextMenu_AcceptDstRow {
+            get { return ResourceManager.GetString("ContextMenu_AcceptDstRow", resourceCulture); }
+        }
+
+        public static string Button_SaveMerge {
+            get {
+                return ResourceManager.GetString("Button_SaveMerge", resourceCulture);
+            }
+        }
+
+        public static string Msg_NoMergeDecisions {
+            get {
+                return ResourceManager.GetString("Msg_NoMergeDecisions", resourceCulture);
+            }
+        }
+
+        public static string Msg_MergeSaved {
+            get {
+                return ResourceManager.GetString("Msg_MergeSaved", resourceCulture);
             }
         }
         

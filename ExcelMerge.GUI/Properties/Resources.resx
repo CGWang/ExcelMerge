@@ -500,4 +500,25 @@ If you don't want to apply file settings, enable "Ignore File Setting".</value>
   <data name="Word_Chinese" xml:space="preserve">
     <value>Chinese</value>
   </data>
+  <data name="ContextMenu_AcceptSrc" xml:space="preserve">
+    <value>Accept Left (Src)</value>
+  </data>
+  <data name="ContextMenu_AcceptDst" xml:space="preserve">
+    <value>Accept Right (Dst)</value>
+  </data>
+  <data name="ContextMenu_AcceptSrcRow" xml:space="preserve">
+    <value>Accept Left Row</value>
+  </data>
+  <data name="ContextMenu_AcceptDstRow" xml:space="preserve">
+    <value>Accept Right Row</value>
+  </data>
+  <data name="Button_SaveMerge" xml:space="preserve">
+    <value>Save Merge</value>
+  </data>
+  <data name="Msg_NoMergeDecisions" xml:space="preserve">
+    <value>No merge decisions made. Right-click cells and choose Accept Left/Right first.</value>
+  </data>
+  <data name="Msg_MergeSaved" xml:space="preserve">
+    <value>Merged file saved to: {0}</value>
+  </data>
 </root>

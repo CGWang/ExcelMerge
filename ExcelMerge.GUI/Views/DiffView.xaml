@@ -31,250 +31,339 @@
       <RowDefinition Height="*"/>
     </Grid.RowDefinitions>
 
-    <Expander x:Name="ToolExpander"
-              Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5"
-              Margin="3">
-      <Expander.Header>
-        <WrapPanel Orientation="Horizontal" Margin="3">
+    <!-- ============ Toolbar Area (TortoiseMerge-style) ============ -->
+    <StackPanel Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5"
+                Background="{StaticResource ToolbarBgBrush}">
 
-          <Button x:Name="DiffButton" Content="{x:Static props:Resources.Button_ExtractDiff}"
-                  Style="{StaticResource PrimaryButton}"
-                  Margin="10,0,0,0" Height="36" Padding="16,6"
-                  Click="DiffButton_Click"
-                  IsEnabled="{Binding Executable}"/>
+      <!--== File Paths Row ==-->
+      <Grid Margin="8,6,8,2">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
-          <GroupBox Header="{x:Static props:Resources.GroupBox_DisplayFormat}"
-                    Margin="10,0,0,0">
-            <StackPanel Orientation="Horizontal">
-              <RadioButton x:Name="ShowAllRadioButton" Content="{x:Static props:Resources.RadioButton_ShowAll}"
-                           Margin="3"
-                           IsChecked="True"
-                           Checked="ShowAllRadioButton_Checked"
-                           />
-              <RadioButton x:Name="ShowOnlyDiffRadioButton" Content="{x:Static props:Resources.RadioButton_ShowOnlyDiff}"
-                           Margin="3"
-                           IsChecked="False"
-                           Checked="ShowOnlyDiffRadioButton_Checked"
-                           />
-            </StackPanel>
-          </GroupBox>
-
-          <!--Src-->
-          <GroupBox Header="{x:Static props:Resources.Word_SrcFile}" Margin="10,0,0,0">
-            <StackPanel Orientation="Horizontal">
-              <Button x:Name="SrcBrowseButton" Width="28" Height="24" Margin="0,0,4,0" Padding="0"
-                      Click="SrcBrowseButton_Click" ToolTip="Browse...">
-                <Path Data="M2,4 L2,14 L16,14 L16,6 L9,6 L7,4 Z M0,2 L8,2 L10,4 L18,4 L18,16 L0,16 Z"
-                      Fill="#5F6672" Width="18" Height="16" Stretch="Uniform"/>
-              </Button>
-              <TextBox x:Name="SrcPathTextBox" AcceptsReturn="False" Margin="1"
-                       Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={vc:PercentageConverter}, ConverterParameter='0.20'}"
-                       AllowDrop="True"
-                       Text="{Binding SrcPath}"
-                       KeyDown="PathTextBox_KeyDown"
-                       TextChanged="PathTextBox_TextChanged"
-                       Tag="0">
-                <i:Interaction.Behaviors>
-                  <behavior:DragAcceptBehavior
-                                            Description="{Binding DataContext. Description,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                </i:Interaction.Behaviors>
-              </TextBox>
-              <Label Content="{x:Static props:Resources.Word_Sheet}"/>
-              <ComboBox x:Name="SrcSheetCombobox" Margin="0,0,5,0" Width="100"
-                        ItemsSource="{Binding SrcSheetNames}"
-                        SelectedIndex="{Binding SelectedSrcSheetIndex}"
-                        />
-            </StackPanel>
-          </GroupBox>
-
-          <!--Swap-->
-          <Button x:Name="SwapButton"
-                  Click="SwapButton_Click" Margin="8,0,0,0" Padding="0"
-                  Width="40" Height="40"
-                  ToolTip="{x:Static props:Resources.ToolTip_Swap}"
-                  VerticalAlignment="Center"
-                  IsEnabled="{Binding Executable}">
-            <Grid Width="24" Height="16">
-              <Path Data="M0,3 L8,0 L8,6 Z" Fill="#3B82F6" HorizontalAlignment="Left" VerticalAlignment="Top"/>
-              <Path Data="M24,13 L16,10 L16,16 Z" Fill="#3B82F6" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
-              <Line X1="2" Y1="3" X2="22" Y2="3" Stroke="#3B82F6" StrokeThickness="1.5"/>
-              <Line X1="2" Y1="13" X2="22" Y2="13" Stroke="#3B82F6" StrokeThickness="1.5"/>
-            </Grid>
+        <!--Src: TextBox with embedded browse button-->
+        <TextBlock Grid.Column="0" Text="{x:Static props:Resources.Word_SrcFile}" VerticalAlignment="Center"
+                   Margin="0,0,6,0" FontWeight="Medium" Foreground="{StaticResource TextSecondaryBrush}"
+                   FontSize="{StaticResource FontSizeSmall}"/>
+        <Grid Grid.Column="1" Margin="0,0,4,0">
+          <TextBox x:Name="SrcPathTextBox" AcceptsReturn="False" Padding="6,4,28,4"
+                   AllowDrop="True"
+                   Text="{Binding SrcPath}"
+                   KeyDown="PathTextBox_KeyDown"
+                   TextChanged="PathTextBox_TextChanged"
+                   Tag="0">
+            <i:Interaction.Behaviors>
+              <behavior:DragAcceptBehavior
+                  Description="{Binding DataContext. Description,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+            </i:Interaction.Behaviors>
+          </TextBox>
+          <Button x:Name="SrcBrowseButton"
+                  HorizontalAlignment="Right" VerticalAlignment="Center"
+                  Margin="0,0,3,0"
+                  Style="{StaticResource ToolbarButton}" Padding="3,2"
+                  Click="SrcBrowseButton_Click" ToolTip="Browse..."
+                  Focusable="False">
+            <Path Data="M2,4 L2,14 L16,14 L16,6 L9,6 L7,4 Z M0,2 L8,2 L10,4 L18,4 L18,16 L0,16 Z"
+                  Fill="#8E95A2" Width="14" Height="12" Stretch="Uniform"/>
           </Button>
+        </Grid>
+        <TextBlock Grid.Column="2" Text="{x:Static props:Resources.Word_Sheet}" VerticalAlignment="Center"
+                   Margin="6,0,4,0" Foreground="{StaticResource TextSecondaryBrush}"
+                   FontSize="{StaticResource FontSizeSmall}"/>
+        <ComboBox x:Name="SrcSheetCombobox" Grid.Column="3" Width="100"
+                  ItemsSource="{Binding SrcSheetNames}"
+                  SelectedIndex="{Binding SelectedSrcSheetIndex}"/>
 
-          <!--Dst-->
-          <GroupBox Header="{x:Static props:Resources.Word_DstFile}" Margin="8,0,0,0">
-            <StackPanel Orientation="Horizontal">
-              <Button x:Name="DstBrowseButton" Width="28" Height="24" Margin="0,0,4,0" Padding="0"
-                      Click="DstBrowseButton_Click" ToolTip="Browse...">
-                <Path Data="M2,4 L2,14 L16,14 L16,6 L9,6 L7,4 Z M0,2 L8,2 L10,4 L18,4 L18,16 L0,16 Z"
-                      Fill="#5F6672" Width="18" Height="16" Stretch="Uniform"/>
-              </Button>
-              <TextBox x:Name="DstPathTextBox" AcceptsReturn="False" Margin="1"
-                       Width="{Binding Path=ActualWidth, RelativeSource={RelativeSource AncestorType=Window}, Converter={vc:PercentageConverter}, ConverterParameter='0.20'}"
-                       AllowDrop="True"
-                       Text="{Binding DstPath}"
-                       KeyDown="PathTextBox_KeyDown"
-                       TextChanged="PathTextBox_TextChanged"
-                       Tag="1">
-                <i:Interaction.Behaviors>
-                  <behavior:DragAcceptBehavior
-                                            Description="{Binding DataContext. Description,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
-                </i:Interaction.Behaviors>
-              </TextBox>
-              <Label Content="{x:Static props:Resources.Word_Sheet}"/>
-              <ComboBox x:Name="DstSheetCombobox" Margin="5,0,0,0" Width="100"
-                        ItemsSource="{Binding DstSheetNames}"
-                        SelectedIndex="{Binding SelectedDstSheetIndex}"/>
-            </StackPanel>
-          </GroupBox>
-
-          <Grid Margin="10,0,0,0">
-            <Grid.RowDefinitions>
-              <RowDefinition Height="Auto"/>
-              <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="*"/>
-              <ColumnDefinition Width="*"/>
-              <ColumnDefinition Width="*"/>
-              <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-
-            <Border BorderThickness="0.2" BorderBrush="Gray"
-                    Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="4"/>
-
-            <Label Content="{Binding ModifiedCellCount}" ContentStringFormat="{x:Static props:Resources.Label_ModifiedCells}"
-                   Grid.Row="0" Grid.Column="0"
-                   HorizontalAlignment="Center"
-                   />
-
-            <Border BorderThickness="0.2" BorderBrush="Gray"
-                    Grid.Row="0" Grid.Column="0"/>
-
-            <Label Content="{Binding ModifiedRowCount}" ContentStringFormat="{x:Static props:Resources.Label_ModifiedRows}"
-                   Grid.Row="0" Grid.Column="1"
-                   HorizontalAlignment="Center" 
-                   />
-
-            <Border BorderThickness="0.2" BorderBrush="Gray"
-                    Grid.Row="0" Grid.Column="1"/>
-
-            <Label Content="{Binding AddedRowCount}" ContentStringFormat="{x:Static props:Resources.Label_AddedRows}"
-                   Grid.Row="0" Grid.Column="2"
-                   HorizontalAlignment="Center" 
-                   />
-
-            <Border BorderThickness="0.2" BorderBrush="Gray"
-                    Grid.Row="0" Grid.Column="2"/>
-
-            <Label Content="{Binding RemovedRowCount}" ContentStringFormat="{x:Static props:Resources.Label_RemovedRows}"
-                   Grid.Row="0" Grid.Column="3"
-                   HorizontalAlignment="Center" 
-                   />
-
-            <Border BorderThickness="0.2" BorderBrush="Gray"
-                    Grid.Row="0" Grid.Column="3"/>
-
-            <Grid Grid.Row="1" Grid.Column="0">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-              </Grid.ColumnDefinitions>
-              <Button x:Name="PrevModifiedCellButton" Content="◀" Width="36" FontSize="14" Grid.Column="0" Margin="3"
-                      Click="PrevModifiedCellButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Left}"
-                      />
-              <Button x:Name="NextModifiedCellButton" Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
-                      Click="NextModifiedCellButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Right}"
-                      />
-            </Grid>
-
-            <Border BorderThickness="0.2" BorderBrush="Gray"
-                    Grid.Row="1" Grid.Column="0"/>
-
-            <Grid Grid.Row="1" Grid.Column="1">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-              </Grid.ColumnDefinitions>
-              <Button x:Name="PrevModifiedRowButton" Content="◀" Width="36" FontSize="14" Grid.Column="0" Margin="3"
-                      Click="PrevModifiedRowButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Up}"
-                      />
-              <Button x:Name="NextModifiedRowButton" Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
-                      Click="NextModifiedRowButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Down}"
-                      />
-            </Grid>
-
-            <Border BorderThickness="0.2" BorderBrush="Gray"
-                    Grid.Row="1" Grid.Column="1"/>
-
-            <Grid Grid.Row="1" Grid.Column="2">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-              </Grid.ColumnDefinitions>
-              <Button x:Name="PrevAddedRowButton" Content="◀" Width="36" FontSize="14"  Grid.Column="0" Margin="3"
-                      Click="PrevAddedRowButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_Ctrl_I}"
-                      />
-              <Button x:Name="NextAddedRowButton"  Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
-                      Click="NextAddedRowButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_Ctrl_K}"
-                      />
-            </Grid>
-
-            <Border BorderThickness="0.2" BorderBrush="Gray"
-                    Grid.Row="1" Grid.Column="2"/>
-
-            <Grid Grid.Row="1" Grid.Column="3">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-              </Grid.ColumnDefinitions>
-              <Button x:Name="PrevRemovedRowButton"  Content="◀" Width="36" FontSize="14" Grid.Column="0" Margin="3"
-                      Click="PrevRemovedRowButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_Ctrl_O}"
-                                    />
-              <Button x:Name="NextRemovedRowButton"  Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
-                      Click="NextRemovedRowButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_Ctrl_L}"
-                      />
-            </Grid>
-
-            <Border BorderThickness="0.2" BorderBrush="Gray"
-                    Grid.Row="1" Grid.Column="3"/>
+        <!--Swap-->
+        <Button x:Name="SwapButton" Grid.Column="4"
+                Style="{StaticResource ToolbarButton}" Padding="8,3" Margin="10,0"
+                Click="SwapButton_Click"
+                ToolTip="{x:Static props:Resources.ToolTip_Swap}"
+                IsEnabled="{Binding Executable}">
+          <Grid Width="22" Height="14">
+            <Path Data="M0,3 L7,0 L7,6 Z" Fill="#3B82F6" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            <Path Data="M22,11 L15,8 L15,14 Z" Fill="#3B82F6" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+            <Line X1="2" Y1="3" X2="20" Y2="3" Stroke="#3B82F6" StrokeThickness="1.5"/>
+            <Line X1="2" Y1="11" X2="20" Y2="11" Stroke="#3B82F6" StrokeThickness="1.5"/>
           </Grid>
+        </Button>
 
+        <!--Dst: TextBox with embedded browse button-->
+        <TextBlock Grid.Column="5" Text="{x:Static props:Resources.Word_DstFile}" VerticalAlignment="Center"
+                   Margin="0,0,6,0" FontWeight="Medium" Foreground="{StaticResource TextSecondaryBrush}"
+                   FontSize="{StaticResource FontSizeSmall}"/>
+        <Grid Grid.Column="6" Margin="0,0,4,0">
+          <TextBox x:Name="DstPathTextBox" AcceptsReturn="False" Padding="6,4,28,4"
+                   AllowDrop="True"
+                   Text="{Binding DstPath}"
+                   KeyDown="PathTextBox_KeyDown"
+                   TextChanged="PathTextBox_TextChanged"
+                   Tag="1">
+            <i:Interaction.Behaviors>
+              <behavior:DragAcceptBehavior
+                  Description="{Binding DataContext. Description,RelativeSource={RelativeSource AncestorType=UserControl}}"/>
+            </i:Interaction.Behaviors>
+          </TextBox>
+          <Button x:Name="DstBrowseButton"
+                  HorizontalAlignment="Right" VerticalAlignment="Center"
+                  Margin="0,0,3,0"
+                  Style="{StaticResource ToolbarButton}" Padding="3,2"
+                  Click="DstBrowseButton_Click" ToolTip="Browse..."
+                  Focusable="False">
+            <Path Data="M2,4 L2,14 L16,14 L16,6 L9,6 L7,4 Z M0,2 L8,2 L10,4 L18,4 L18,16 L0,16 Z"
+                  Fill="#8E95A2" Width="14" Height="12" Stretch="Uniform"/>
+          </Button>
+        </Grid>
+        <TextBlock Grid.Column="7" Text="{x:Static props:Resources.Word_Sheet}" VerticalAlignment="Center"
+                   Margin="6,0,4,0" Foreground="{StaticResource TextSecondaryBrush}"
+                   FontSize="{StaticResource FontSizeSmall}"/>
+        <ComboBox x:Name="DstSheetCombobox" Grid.Column="8" Width="100"
+                  ItemsSource="{Binding DstSheetNames}"
+                  SelectedIndex="{Binding SelectedDstSheetIndex}"/>
+      </Grid>
 
-        </WrapPanel>
-      </Expander.Header>
+      <!--== Toolbar Row ==-->
+      <Border BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="0,1,0,1" Padding="4,0">
+        <StackPanel Orientation="Horizontal">
 
-      <WrapPanel Orientation="Horizontal" Margin="3">
-
-        <GroupBox Header="{x:Static props:Resources.Word_Search}" Margin="10,0,0,0">
-          <StackPanel Orientation="Horizontal">
-            <ComboBox x:Name="SearchTextCombobox" Width="200" IsEditable="True" Margin="3"/>
-            <CheckBox x:Name="ExactMatchCheckBox" Content="{x:Static props:Resources.Word_ExactMatch}" Margin="3" IsChecked="False"/>
-            <CheckBox x:Name="CaseSensitiveCheckBox" Content="{x:Static props:Resources.Word_CaseSensitive}" Margin="3" IsChecked="False"/>
-            <CheckBox x:Name="RegexCheckBox" Content="{x:Static props:Resources.Word_Regex}" Margin="3" IsChecked="False"/>
-            <Button x:Name="PrevMatchCellButton"  Content="◀" Width="36" FontSize="14" Grid.Column="0" Margin="3"
-                    Click="PrevMatchCellButton_Click"
-                    ToolTip="{x:Static props:Resources.Shortcut_F8}"/>
-            <Button x:Name="NextMatchCellButton"  Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
-                    Click="NextMatchCellButton_Click"
-                    ToolTip="{x:Static props:Resources.Shortcut_F9}"/>
+          <!--── Group: Diff ──-->
+          <StackPanel Margin="4,0">
+            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+              <Button x:Name="DiffButton"
+                      Style="{StaticResource ToolbarPrimaryButton}"
+                      Click="DiffButton_Click"
+                      IsEnabled="{Binding Executable}"
+                      Padding="10,4">
+                <StackPanel Orientation="Horizontal">
+                  <Path Data="M2,0 L10,0 L14,4 L14,16 L2,16 Z M10,0 L10,4 L14,4"
+                        Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                        StrokeThickness="1.2" Fill="Transparent"
+                        Width="14" Height="16" Stretch="Uniform" Margin="0,0,5,0"/>
+                  <TextBlock Text="{x:Static props:Resources.Button_ExtractDiff}" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Button>
+            </StackPanel>
+            <TextBlock Text="Diff" HorizontalAlignment="Center"
+                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
           </StackPanel>
-        </GroupBox>
 
-        <CheckBox x:Name="IgnoreFileSettingCheckbox" Content="{x:Static props:Resources.Label_IgnoreFileSetting}" Margin="3" VerticalAlignment="Center"/>
+          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
 
-      </WrapPanel>
+          <!--── Group: Merge ──-->
+          <StackPanel Margin="4,0">
+            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+              <Button x:Name="SaveMergeButton"
+                      Click="SaveMergeButton_Click"
+                      Padding="10,4">
+                <StackPanel Orientation="Horizontal">
+                  <Path Data="M3,0 L13,0 L13,12 L8,16 L3,12 Z M6,8 L10,8 L10,4 L6,4 Z"
+                        Fill="#10B981" Width="14" Height="16" Stretch="Uniform" Margin="0,0,5,0"/>
+                  <TextBlock Text="{x:Static props:Resources.Button_SaveMerge}" VerticalAlignment="Center"/>
+                </StackPanel>
+              </Button>
+            </StackPanel>
+            <TextBlock Text="Merge" HorizontalAlignment="Center"
+                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
+          </StackPanel>
 
-    </Expander>
+          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+
+          <!--── Group: Display ──-->
+          <StackPanel Margin="4,0">
+            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+              <RadioButton x:Name="ShowAllRadioButton" Content="{x:Static props:Resources.RadioButton_ShowAll}"
+                           Margin="4,2" IsChecked="True"
+                           Checked="ShowAllRadioButton_Checked"/>
+              <RadioButton x:Name="ShowOnlyDiffRadioButton" Content="{x:Static props:Resources.RadioButton_ShowOnlyDiff}"
+                           Margin="4,2" IsChecked="False"
+                           Checked="ShowOnlyDiffRadioButton_Checked"/>
+            </StackPanel>
+            <TextBlock Text="{x:Static props:Resources.GroupBox_DisplayFormat}" HorizontalAlignment="Center"
+                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
+          </StackPanel>
+
+          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+
+          <!--── Group: Navigate ──-->
+          <StackPanel Margin="4,0">
+            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+
+              <!--Modified Cells-->
+              <StackPanel Margin="2,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <Button x:Name="PrevModifiedCellButton" Style="{StaticResource ToolbarButton}"
+                          Content="◀" FontSize="11" Padding="5,2"
+                          Click="PrevModifiedCellButton_Click"
+                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Left}"/>
+                  <Button x:Name="NextModifiedCellButton" Style="{StaticResource ToolbarButton}"
+                          Content="▶" FontSize="11" Padding="5,2"
+                          Click="NextModifiedCellButton_Click"
+                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Right}"/>
+                </StackPanel>
+                <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}">
+                  <Run Text="{Binding ModifiedCellCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="cells"/>
+                </TextBlock>
+              </StackPanel>
+
+              <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="4,2,4,0"/>
+
+              <!--Modified Rows-->
+              <StackPanel Margin="2,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <Button x:Name="PrevModifiedRowButton" Style="{StaticResource ToolbarButton}"
+                          Content="◀" FontSize="11" Padding="5,2"
+                          Click="PrevModifiedRowButton_Click"
+                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Up}"/>
+                  <Button x:Name="NextModifiedRowButton" Style="{StaticResource ToolbarButton}"
+                          Content="▶" FontSize="11" Padding="5,2"
+                          Click="NextModifiedRowButton_Click"
+                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Down}"/>
+                </StackPanel>
+                <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}">
+                  <Run Text="{Binding ModifiedRowCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="rows"/>
+                </TextBlock>
+              </StackPanel>
+
+              <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="4,2,4,0"/>
+
+              <!--Added Rows-->
+              <StackPanel Margin="2,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <Button x:Name="PrevAddedRowButton" Style="{StaticResource ToolbarButton}"
+                          Content="◀" FontSize="11" Padding="5,2"
+                          Click="PrevAddedRowButton_Click"
+                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_I}"/>
+                  <Button x:Name="NextAddedRowButton" Style="{StaticResource ToolbarButton}"
+                          Content="▶" FontSize="11" Padding="5,2"
+                          Click="NextAddedRowButton_Click"
+                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_K}"/>
+                </StackPanel>
+                <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="#16A34A">
+                  <Run Text="{Binding AddedRowCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="added"/>
+                </TextBlock>
+              </StackPanel>
+
+              <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="4,2,4,0"/>
+
+              <!--Removed Rows-->
+              <StackPanel Margin="2,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                  <Button x:Name="PrevRemovedRowButton" Style="{StaticResource ToolbarButton}"
+                          Content="◀" FontSize="11" Padding="5,2"
+                          Click="PrevRemovedRowButton_Click"
+                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_O}"/>
+                  <Button x:Name="NextRemovedRowButton" Style="{StaticResource ToolbarButton}"
+                          Content="▶" FontSize="11" Padding="5,2"
+                          Click="NextRemovedRowButton_Click"
+                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_L}"/>
+                </StackPanel>
+                <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="#DC2626">
+                  <Run Text="{Binding RemovedRowCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="removed"/>
+                </TextBlock>
+              </StackPanel>
+
+            </StackPanel>
+            <TextBlock Text="Navigate" HorizontalAlignment="Center"
+                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,3"/>
+          </StackPanel>
+
+          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+
+          <!--── Group: Search ──-->
+          <StackPanel Margin="4,0">
+            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+              <Button Style="{StaticResource ToolbarButton}" Padding="5,3"
+                      Click="FindButton_Click"
+                      ToolTip="Ctrl+F">
+                <Path Data="M10,0 A5,5 0 1 0 10,10 A5,5 0 1 0 10,0 M14,10 L18,14"
+                      Stroke="#5F6672" StrokeThickness="1.5" Fill="Transparent"
+                      Width="16" Height="14" Stretch="Uniform"/>
+              </Button>
+              <ComboBox x:Name="SearchTextCombobox" Width="160" IsEditable="True" Margin="4,0"
+                        PreviewKeyDown="SearchTextCombobox_PreviewKeyDown"/>
+              <CheckBox x:Name="ExactMatchCheckBox" Content="{x:Static props:Resources.Word_ExactMatch}"
+                        Margin="4,0" VerticalAlignment="Center" IsChecked="False"/>
+              <CheckBox x:Name="CaseSensitiveCheckBox" Content="{x:Static props:Resources.Word_CaseSensitive}"
+                        Margin="4,0" VerticalAlignment="Center" IsChecked="False"/>
+              <CheckBox x:Name="RegexCheckBox" Content="{x:Static props:Resources.Word_Regex}"
+                        Margin="4,0" VerticalAlignment="Center" IsChecked="False"/>
+              <Button x:Name="PrevMatchCellButton" Style="{StaticResource ToolbarButton}"
+                      Content="◀" FontSize="11" Padding="5,2" Margin="2,0"
+                      Click="PrevMatchCellButton_Click"
+                      ToolTip="{x:Static props:Resources.Shortcut_F8}"/>
+              <Button x:Name="NextMatchCellButton" Style="{StaticResource ToolbarButton}"
+                      Content="▶" FontSize="11" Padding="5,2"
+                      Click="NextMatchCellButton_Click"
+                      ToolTip="{x:Static props:Resources.Shortcut_F9}"/>
+            </StackPanel>
+            <TextBlock Text="{x:Static props:Resources.Word_Search}" HorizontalAlignment="Center"
+                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
+          </StackPanel>
+
+          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+
+          <!--── Group: Options ──-->
+          <StackPanel Margin="4,0">
+            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+              <CheckBox x:Name="IgnoreFileSettingCheckbox"
+                        Content="{x:Static props:Resources.Label_IgnoreFileSetting}"
+                        Margin="4,2" VerticalAlignment="Center"/>
+            </StackPanel>
+            <TextBlock Text="Options" HorizontalAlignment="Center"
+                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
+          </StackPanel>
+
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+
+    <!--Search Overlay Panel (Ctrl+F quick search)-->
+    <Border x:Name="SearchOverlayPanel"
+            Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3"
+            VerticalAlignment="Top" HorizontalAlignment="Right"
+            Margin="0,4,20,0"
+            Visibility="Collapsed"
+            Panel.ZIndex="100"
+            Background="{StaticResource PanelBgBrush}"
+            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+            CornerRadius="4"
+            Padding="8,5">
+      <Border.Effect>
+        <DropShadowEffect ShadowDepth="2" BlurRadius="8" Opacity="0.18" Direction="270"/>
+      </Border.Effect>
+      <StackPanel Orientation="Horizontal">
+        <ComboBox x:Name="SearchOverlayComboBox" Width="220" IsEditable="True" Margin="0,0,4,0"
+                  VerticalContentAlignment="Center"
+                  PreviewKeyDown="SearchOverlayComboBox_PreviewKeyDown"/>
+        <CheckBox Content="{x:Static props:Resources.Word_ExactMatch}"
+                  Margin="4,0" VerticalAlignment="Center"
+                  IsChecked="{Binding IsChecked, ElementName=ExactMatchCheckBox, Mode=TwoWay}"/>
+        <CheckBox Content="{x:Static props:Resources.Word_CaseSensitive}"
+                  Margin="4,0" VerticalAlignment="Center"
+                  IsChecked="{Binding IsChecked, ElementName=CaseSensitiveCheckBox, Mode=TwoWay}"/>
+        <CheckBox Content="{x:Static props:Resources.Word_Regex}"
+                  Margin="4,0" VerticalAlignment="Center"
+                  IsChecked="{Binding IsChecked, ElementName=RegexCheckBox, Mode=TwoWay}"/>
+        <Button Style="{StaticResource ToolbarButton}" Content="◀" FontSize="11" Padding="5,2" Margin="2,0"
+                Click="SearchOverlayPrev_Click"
+                ToolTip="{x:Static props:Resources.Shortcut_F8}"/>
+        <Button Style="{StaticResource ToolbarButton}" Content="▶" FontSize="11" Padding="5,2" Margin="2,0"
+                Click="SearchOverlayNext_Click"
+                ToolTip="{x:Static props:Resources.Shortcut_F9}"/>
+        <Button Style="{StaticResource ToolbarButton}" Content="✕" FontSize="10" Padding="4,2" Margin="2,0"
+                Click="SearchOverlayClose_Click"
+                ToolTip="Esc"/>
+      </StackPanel>
+    </Border>
 
     <!--Src Location Grid-->
     <Border BorderBrush="LightGray" BorderThickness="1" Grid.Column="0" Grid.Row="1" Margin="5, 5, 5, 20">
@@ -333,6 +422,11 @@
           <MenuItem Header="{x:Static props:Resources.ContextMenu_BuildCellBaseLog}" Click="BuildCellBaseLog_Click"/>
           <MenuItem Header="{x:Static props:Resources.ContextMenu_CopyAsTsv}" Click="CopyAsTsv_Click" InputGestureText="Ctrl + c"/>
           <MenuItem Header="{x:Static props:Resources.ContextMenu_CopyAsCsv}" Click="CopyAsCsv_Click" InputGestureText="Ctrl + C"/>
+          <Separator/>
+          <MenuItem Header="{x:Static props:Resources.ContextMenu_AcceptSrc}" Click="AcceptSrc_Click"/>
+          <MenuItem Header="{x:Static props:Resources.ContextMenu_AcceptDst}" Click="AcceptDst_Click"/>
+          <MenuItem Header="{x:Static props:Resources.ContextMenu_AcceptSrcRow}" Click="AcceptSrcRow_Click"/>
+          <MenuItem Header="{x:Static props:Resources.ContextMenu_AcceptDstRow}" Click="AcceptDstRow_Click"/>
         </ContextMenu>
       </fg:FastGridControl.ContextMenu>
 
@@ -375,8 +469,11 @@
           <MenuItem Header="{x:Static props:Resources.ContextMenu_BuildCellBaseLog}" Click="BuildCellBaseLog_Click"/>
           <MenuItem Header="{x:Static props:Resources.ContextMenu_CopyAsTsv}" Click="CopyAsTsv_Click" InputGestureText="Ctrl + c"/>
           <MenuItem Header="{x:Static props:Resources.ContextMenu_CopyAsCsv}" Click="CopyAsCsv_Click" InputGestureText="Ctrl + C"/>
-          <!--<MenuItem Header="{x:Static props:Resources.ContextMenu_BuildRowBaseLog}" Click="BuildRowBaseLog_Click"/>
-                    <MenuItem Header="{x:Static props:Resources.ContextMenu_BuildColumnBaseLog}" Click="BuildColumnBaseLog_Click"/>-->
+          <Separator/>
+          <MenuItem Header="{x:Static props:Resources.ContextMenu_AcceptSrc}" Click="AcceptSrc_Click"/>
+          <MenuItem Header="{x:Static props:Resources.ContextMenu_AcceptDst}" Click="AcceptDst_Click"/>
+          <MenuItem Header="{x:Static props:Resources.ContextMenu_AcceptSrcRow}" Click="AcceptSrcRow_Click"/>
+          <MenuItem Header="{x:Static props:Resources.ContextMenu_AcceptDstRow}" Click="AcceptDstRow_Click"/>
         </ContextMenu>
       </fg:FastGridControl.ContextMenu>
 
