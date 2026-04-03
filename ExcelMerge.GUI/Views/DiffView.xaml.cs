@@ -1029,6 +1029,52 @@ namespace ExcelMerge.GUI.Views
 
         #endregion
 
+        #region History
+
+        private void HistoryButton_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+            var menu = new ContextMenu();
+
+            var recentSets = App.Instance.GetRecentFileSets().ToList();
+            if (recentSets.Count == 0)
+            {
+                menu.Items.Add(new MenuItem { Header = "(empty)", IsEnabled = false });
+            }
+            else
+            {
+                foreach (var set in recentSets)
+                {
+                    var src = set.Item1;
+                    var dst = set.Item2;
+                    var srcName = Path.GetFileName(src);
+                    var dstName = Path.GetFileName(dst);
+                    var item = new MenuItem
+                    {
+                        Header = $"{srcName}  \u2194  {dstName}",
+                        ToolTip = $"{src}\n\u2194\n{dst}",
+                    };
+                    item.Click += (s, args) => ApplyFileSet(src, dst);
+                    menu.Items.Add(item);
+                }
+            }
+
+            menu.PlacementTarget = button;
+            menu.Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom;
+            menu.IsOpen = true;
+        }
+
+        private void ApplyFileSet(string srcPath, string dstPath)
+        {
+            SrcPathTextBox.Text = srcPath;
+            DstPathTextBox.Text = dstPath;
+            SrcPathTextBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)?.UpdateSource();
+            DstPathTextBox.GetBindingExpression(System.Windows.Controls.TextBox.TextProperty)?.UpdateSource();
+            ExecuteDiff(isStartup: false);
+        }
+
+        #endregion
+
         private void CopyToClipboardSelectedCells(string separator)
         {
             if (copyTargetGrid == null)

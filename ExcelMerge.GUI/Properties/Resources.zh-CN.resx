@@ -259,7 +259,7 @@
     <value>路径</value>
   </data>
   <data name="Word_Sheet" xml:space="preserve">
-    <value>表格</value>
+    <value>SheetName</value>
   </data>
   <data name="Word_DstFile" xml:space="preserve">
     <value>右边的文件</value>

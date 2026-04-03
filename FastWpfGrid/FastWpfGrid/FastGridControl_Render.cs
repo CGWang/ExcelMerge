@@ -319,6 +319,9 @@ namespace FastWpfGrid
             int leftPos = rectContent.Left;
             int rightPos = rectContent.Right;
 
+            if (cell.Decoration == CellDecoration.LeftIndicator)
+                leftPos += 6; // reserve space for 4px indicator + 2px gap
+
             for (int i = count - 1; i >= count - rightCount; i--)
             {
                 var block = cell.GetBlock(i);
@@ -340,6 +343,11 @@ namespace FastWpfGrid
             {
                 case CellDecoration.StrikeOutHorizontal:
                     _drawBuffer.DrawLine(rect.Left, rect.Top + rect.Height/2, rect.Right, rect.Top + rect.Height/2, cell.DecorationColor ?? Colors.Black);
+                    break;
+                case CellDecoration.LeftIndicator:
+                    var indicatorColor = cell.DecorationColor ?? Colors.Red;
+                    var indicatorRect = new IntRect(new IntPoint(rect.Left + 1, rect.Top + 1), new IntSize(4, rect.Height - 2));
+                    _drawBuffer.FillRectangle(indicatorRect, indicatorColor);
                     break;
             }
             if (isHoverCell)

@@ -59,6 +59,9 @@ namespace ExcelMerge.GUI.Models
         public MergeResult MergeResult { get; set; }
 
         private static readonly Color MergedCellColor = Color.FromRgb(144, 238, 144); // LightGreen
+        private static readonly Color RowIndicatorColor = Color.FromRgb(180, 40, 40);
+        private static readonly Color ModifiedColumnHeaderColor = Color.FromRgb(255, 220, 220);
+        private HashSet<int> _modifiedColumns;
 
         public DiffGridModel(ExcelSheetDiff sheetDiff, DiffType type) : base()
         {
@@ -67,17 +70,44 @@ namespace ExcelMerge.GUI.Models
 
             columnCount = SheetDiff.Rows.Max(r => r.Value.Cells.Count);
             rowCount = SheetDiff.Rows.Count();
-            
+
+            _modifiedColumns = new HashSet<int>();
+            foreach (var row in SheetDiff.Rows)
+            {
+                foreach (var cell in row.Value.Cells)
+                {
+                    if (cell.Value.Status != ExcelCellStatus.None)
+                        _modifiedColumns.Add(cell.Key);
+                }
+            }
+
             App.Instance.OnSettingUpdated += () => { InvalidateAll(); };
         }
 
         public override string GetColumnHeaderText(int column)
         {
+            var excelCol = ToExcelColumnName(column);
+
             ExcelCellDiff cellDiff;
             if (TryGetCellDiff(ColumnHeaderIndex, column, out cellDiff))
-                return GetCellText(cellDiff);
+            {
+                var text = GetCellText(cellDiff);
+                return string.IsNullOrEmpty(text) ? excelCol : $"{excelCol}  {text}";
+            }
 
-            return string.Empty;
+            return excelCol;
+        }
+
+        private static string ToExcelColumnName(int columnIndex)
+        {
+            var result = "";
+            var index = columnIndex;
+            while (index >= 0)
+            {
+                result = (char)('A' + index % 26) + result;
+                index = index / 26 - 1;
+            }
+            return result;
         }
 
         public override string GetRowHeaderText(int row)
@@ -220,7 +250,10 @@ namespace ExcelMerge.GUI.Models
             if (header == null)
                 return header;
 
+            bool hasChanges = IsModifiedRow(row, true);
             header.backgroundColor = App.Instance.Setting.RowHeaderColor;
+            header.decoration = hasChanges ? CellDecoration.LeftIndicator : CellDecoration.None;
+            header.decorationColor = hasChanges ? RowIndicatorColor : null;
 
             return header;
         }
@@ -231,7 +264,9 @@ namespace ExcelMerge.GUI.Models
             if (header == null)
                 return header;
 
-            header.backgroundColor = App.Instance.Setting.ColumnHeaderColor;
+            header.backgroundColor = _modifiedColumns.Contains(column)
+                ? ModifiedColumnHeaderColor
+                : App.Instance.Setting.ColumnHeaderColor;
 
             return header;
         }
@@ -255,12 +290,9 @@ namespace ExcelMerge.GUI.Models
                     status = ExcelCellStatus.Added;
             }
 
-            cell.backgroundColor = null;
-
-            if (App.Instance.Setting.ColorModifiedRow && IsModifiedRow(row, true))
-                cell.backgroundColor = App.Instance.Setting.ModifiedRowColor;
-
-            cell.backgroundColor = GetColor(status) ?? cell.backgroundColor;
+            cell.backgroundColor = GetColor(status);
+            cell.decoration = CellDecoration.None;
+            cell.decorationColor = null;
 
             // Merge decision overlay
             if (MergeResult != null && cellDiff != null && MergeResult.HasDecision(cellDiff.RowIndex, cellDiff.ColumnIndex))
