@@ -449,6 +449,18 @@ namespace ExcelMerge.GUI.Views
             var srcWorkbook = workbooks.Item1;
             var dstWorkbook = workbooks.Item2;
 
+            // When one side uses internal empty file, populate its ComboBox manually
+            if (!srcExists && srcWorkbook.Sheets.Count > 0 && SrcSheetCombobox.Items.Count == 0)
+            {
+                SrcSheetCombobox.ItemsSource = srcWorkbook.Sheets.Keys.ToList();
+                SrcSheetCombobox.SelectedIndex = 0;
+            }
+            if (!dstExists && dstWorkbook.Sheets.Count > 0 && DstSheetCombobox.Items.Count == 0)
+            {
+                DstSheetCombobox.ItemsSource = dstWorkbook.Sheets.Keys.ToList();
+                DstSheetCombobox.SelectedIndex = 0;
+            }
+
             var fileSettings = FindFileSettings(isStartup);
             var srcFileSetting = fileSettings.Item1;
             var dstFileSetting = fileSettings.Item2;
@@ -935,6 +947,76 @@ namespace ExcelMerge.GUI.Views
             SrcDataGrid.CurrentCell = nextCell;
         }
 
+        #region Search Overlay
+
+        private void ShowSearchOverlay()
+        {
+            SearchOverlayPanel.Visibility = Visibility.Visible;
+
+            // Sync current search text from expander ComboBox if overlay is empty
+            if (string.IsNullOrEmpty(SearchOverlayComboBox.Text) && !string.IsNullOrEmpty(SearchTextCombobox.Text))
+                SearchOverlayComboBox.Text = SearchTextCombobox.Text;
+
+            SearchOverlayComboBox.ItemsSource = App.Instance.Setting.SearchHistory.ToList();
+
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Input,
+                new Action(() =>
+                {
+                    SearchOverlayComboBox.Focus();
+                    Keyboard.Focus(SearchOverlayComboBox);
+                    var tb = SearchOverlayComboBox.Template.FindName("PART_EditableTextBox", SearchOverlayComboBox) as TextBox;
+                    tb?.SelectAll();
+                }));
+        }
+
+        private void HideSearchOverlay()
+        {
+            SearchOverlayPanel.Visibility = Visibility.Collapsed;
+            SrcDataGrid.Focus();
+        }
+
+        private void SyncSearchTextFromOverlay()
+        {
+            SearchTextCombobox.Text = SearchOverlayComboBox.Text;
+        }
+
+        private void SearchOverlayComboBox_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                SyncSearchTextFromOverlay();
+                if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                    MovePrevMatchCell();
+                else
+                    MoveNextMatchCell();
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                HideSearchOverlay();
+                e.Handled = true;
+            }
+        }
+
+        private void SearchOverlayPrev_Click(object sender, RoutedEventArgs e)
+        {
+            SyncSearchTextFromOverlay();
+            MovePrevMatchCell();
+        }
+
+        private void SearchOverlayNext_Click(object sender, RoutedEventArgs e)
+        {
+            SyncSearchTextFromOverlay();
+            MoveNextMatchCell();
+        }
+
+        private void SearchOverlayClose_Click(object sender, RoutedEventArgs e)
+        {
+            HideSearchOverlay();
+        }
+
+        #endregion
+
         private void CopyToClipboardSelectedCells(string separator)
         {
             if (copyTargetGrid == null)
@@ -1041,12 +1123,31 @@ namespace ExcelMerge.GUI.Views
                         e.Handled = true;
                     }
                     break;
+                case Key.Escape:
+                    {
+                        if (SearchOverlayPanel.Visibility == Visibility.Visible)
+                        {
+                            HideSearchOverlay();
+                            e.Handled = true;
+                        }
+                    }
+                    break;
+                case Key.F3:
+                    {
+                        if (SearchOverlayPanel.Visibility == Visibility.Visible)
+                            SyncSearchTextFromOverlay();
+                        if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+                            MovePrevMatchCell();
+                        else
+                            MoveNextMatchCell();
+                        e.Handled = true;
+                    }
+                    break;
                 case Key.F:
                     {
-                        if (Keyboard.IsKeyDown(Key.LeftCtrl))
+                        if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
                         {
-                            ToolExpander.IsExpanded = true;
-                            SearchTextCombobox.Focus();
+                            ShowSearchOverlay();
                             e.Handled = true;
                         }
                     }
