@@ -429,7 +429,7 @@ namespace ExcelMerge.GUI.Views
             return diff;
         }
 
-        private void ExecuteDiff(bool isStartup = false)
+        public void ExecuteDiff(bool isStartup = false)
         {
             var srcExists = File.Exists(SrcPathTextBox.Text);
             var dstExists = File.Exists(DstPathTextBox.Text);
@@ -440,7 +440,17 @@ namespace ExcelMerge.GUI.Views
             var args = new DiffViewEventArgs<FastGridControl>(null, container, TargetType.First);
             DataGridEventDispatcher.Instance.DispatchPreExecuteDiffEvent(args);
 
-            var workbooks = ReadWorkbooks();
+            Tuple<ExcelWorkbook, ExcelWorkbook> workbooks;
+            try
+            {
+                workbooks = ReadWorkbooks();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             var srcWorkbook = workbooks.Item1;
             var dstWorkbook = workbooks.Item2;
 
@@ -1226,6 +1236,12 @@ namespace ExcelMerge.GUI.Views
                             ShowLog();
                             e.Handled = true;
                         }
+                    }
+                    break;
+                case Key.F5:
+                    {
+                        ExecuteDiff();
+                        e.Handled = true;
                     }
                     break;
             }

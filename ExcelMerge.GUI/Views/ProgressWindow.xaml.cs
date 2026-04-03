@@ -25,6 +25,8 @@ namespace ExcelMerge.GUI.Views
             InitializeComponent();
         }
 
+        public Exception Error { get; private set; }
+
         public static void DoWorkWithModal(Action<IProgress<string>> work)
         {
             var window = new ProgressWindow();
@@ -35,11 +37,19 @@ namespace ExcelMerge.GUI.Views
                 var progress = new Progress<string>(data => window.Message.Content = data);
 
                 worker.DoWork += (s, workerArgs) => work(progress);
-                worker.RunWorkerCompleted += (s, workerArgs) => window.Close();
+                worker.RunWorkerCompleted += (s, workerArgs) =>
+                {
+                    if (workerArgs.Error != null)
+                        window.Error = workerArgs.Error;
+                    window.Close();
+                };
                 worker.RunWorkerAsync();
             };
 
             window.ShowDialog();
+
+            if (window.Error != null)
+                throw window.Error;
         }
     }
 }

@@ -83,10 +83,30 @@ namespace ExcelMerge.GUI.Views
             Console.Write(message);
         }
 
+        private void RefreshMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            RefreshDiffView();
+        }
+
+        private void RefreshDiffView()
+        {
+            var vm = DataContext as ExcelMerge.GUI.ViewModels.MainWindowViewModel;
+            if (vm?.Content is DiffView diffView)
+            {
+                diffView.ExecuteDiff();
+            }
+        }
+
         private void Window_KeyDown(object sender, System.Windows.Input.KeyEventArgs e)
         {
             switch (e.Key)
             {
+                case Key.F5:
+                    {
+                        RefreshDiffView();
+                        e.Handled = true;
+                    }
+                    break;
                 case Key.D:
                     {
                         if (Keyboard.IsKeyDown(Key.LeftCtrl))

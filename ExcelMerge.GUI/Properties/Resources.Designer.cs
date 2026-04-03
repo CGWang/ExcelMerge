@@ -527,7 +527,16 @@ namespace ExcelMerge.GUI.Properties {
                 return ResourceManager.GetString("MenuItem_Console", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   Refresh に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string MenuItem_Refresh {
+            get {
+                return ResourceManager.GetString("MenuItem_Refresh", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Execute external command に類似しているローカライズされた文字列を検索します。
         /// </summary>

@@ -390,6 +390,9 @@
   <data name="MenuItem_Console" xml:space="preserve">
     <value>日志</value>
   </data>
+  <data name="MenuItem_Refresh" xml:space="preserve">
+    <value>刷新</value>
+  </data>
   <data name="MenuItem_View" xml:space="preserve">
     <value>窗口</value>
   </data>

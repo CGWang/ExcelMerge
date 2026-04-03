@@ -390,6 +390,9 @@
   <data name="MenuItem_Console" xml:space="preserve">
     <value>Console</value>
   </data>
+  <data name="MenuItem_Refresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
   <data name="MenuItem_View" xml:space="preserve">
     <value>View</value>
   </data>

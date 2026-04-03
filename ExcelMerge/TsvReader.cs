@@ -8,7 +8,8 @@ namespace ExcelMerge
     {
         internal static IEnumerable<ExcelRow> Read(string path)
         {
-            using (var sr = new StreamReader(path, Encoding.UTF8))
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            using (var sr = new StreamReader(fs, Encoding.UTF8))
             {
                 var rowIndex = 0;
                 while (!sr.EndOfStream)

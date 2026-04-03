@@ -21,7 +21,12 @@ namespace ExcelMerge
             if (Path.GetExtension(path) == ".tsv")
                 return CreateFromTsv(path, config);
 
-            var srcWb = WorkbookFactory.Create(path);
+            IWorkbook srcWb;
+            using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                srcWb = WorkbookFactory.Create(fs);
+            }
+
             var wb = new ExcelWorkbook();
             for (int i = 0; i < srcWb.NumberOfSheets; i++)
             {
@@ -44,7 +49,11 @@ namespace ExcelMerge
             }
             else
             {
-                var wb = WorkbookFactory.Create(path);
+                IWorkbook wb;
+                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                {
+                    wb = WorkbookFactory.Create(fs);
+                }
                 for (int i = 0; i < wb.NumberOfSheets; i++)
                     yield return wb.GetSheetAt(i).SheetName;
             }
