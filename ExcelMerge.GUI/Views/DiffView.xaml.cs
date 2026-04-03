@@ -608,6 +608,7 @@ namespace ExcelMerge.GUI.Views
             if (dlg.ShowDialog() == true)
             {
                 target.Text = dlg.FileName;
+                target.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
                 TryAutoExecuteDiff();
             }
         }
@@ -638,6 +639,9 @@ namespace ExcelMerge.GUI.Views
 
             _lastSrcPath = src;
             _lastDstPath = dst;
+
+            SrcPathTextBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
+            DstPathTextBox.GetBindingExpression(TextBox.TextProperty)?.UpdateSource();
 
             Dispatcher.InvokeAsync(() => ExecuteDiff(),
                 System.Windows.Threading.DispatcherPriority.Background);
