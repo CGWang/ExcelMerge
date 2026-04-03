@@ -396,13 +396,18 @@ namespace ExcelMerge.GUI.Views
             FileSetting dstSetting = null;
             var srcPath = SrcPathTextBox.Text;
             var dstPath = DstPathTextBox.Text;
-            if (!IgnoreFileSettingCheckbox.IsChecked.Value)
+
+            var srcSelectedItem = SrcSheetCombobox.SelectedItem;
+            var dstSelectedItem = DstSheetCombobox.SelectedItem;
+
+            if (!IgnoreFileSettingCheckbox.IsChecked.Value
+                && srcSelectedItem != null && dstSelectedItem != null)
             {
                 srcSetting =
-                    FindFilseSetting(Path.GetFileName(srcPath), SrcSheetCombobox.SelectedIndex, SrcSheetCombobox.SelectedItem.ToString(), isStartup);
+                    FindFilseSetting(Path.GetFileName(srcPath), SrcSheetCombobox.SelectedIndex, srcSelectedItem.ToString(), isStartup);
 
                 dstSetting =
-                    FindFilseSetting(Path.GetFileName(dstPath), DstSheetCombobox.SelectedIndex, DstSheetCombobox.SelectedItem.ToString(), isStartup);
+                    FindFilseSetting(Path.GetFileName(dstPath), DstSheetCombobox.SelectedIndex, dstSelectedItem.ToString(), isStartup);
 
                 diffConfig = CreateDiffConfig(srcSetting, dstSetting, isStartup);
             }
@@ -447,6 +452,9 @@ namespace ExcelMerge.GUI.Views
 
             SrcSheetCombobox.SelectedIndex = diffConfig.SrcSheetIndex;
             DstSheetCombobox.SelectedIndex = diffConfig.DstSheetIndex;
+
+            if (SrcSheetCombobox.SelectedItem == null || DstSheetCombobox.SelectedItem == null)
+                return;
 
             var srcSheet = srcWorkbook.Sheets[SrcSheetCombobox.SelectedItem.ToString()];
             var dstSheet = dstWorkbook.Sheets[DstSheetCombobox.SelectedItem.ToString()];
