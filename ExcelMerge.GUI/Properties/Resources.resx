@@ -201,9 +201,6 @@
   <data name="Word_File" xml:space="preserve">
     <value>File</value>
   </data>
-  <data name="Word_Japanese" xml:space="preserve">
-    <value>Japanese</value>
-  </data>
   <data name="Word_Language" xml:space="preserve">
     <value>Launguage</value>
   </data>

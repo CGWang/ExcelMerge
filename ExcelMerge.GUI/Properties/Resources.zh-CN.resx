@@ -201,9 +201,6 @@
   <data name="Word_File" xml:space="preserve">
     <value>文件</value>
   </data>
-  <data name="Word_Japanese" xml:space="preserve">
-    <value>日语</value>
-  </data>
   <data name="Word_Language" xml:space="preserve">
     <value>语言</value>
   </data>

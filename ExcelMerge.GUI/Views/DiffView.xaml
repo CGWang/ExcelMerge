@@ -141,211 +141,213 @@
       <StackPanel Orientation="Horizontal">
 
           <!--── Group: Diff ──-->
-          <StackPanel Margin="4,0">
-            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-              <Button x:Name="DiffButton"
-                      Style="{StaticResource ToolbarPrimaryButton}"
-                      Click="DiffButton_Click"
-                      IsEnabled="{Binding Executable}"
-                      Padding="10,4">
-                <StackPanel Orientation="Horizontal">
-                  <Path Data="M2,0 L10,0 L14,4 L14,16 L2,16 Z M10,0 L10,4 L14,4"
-                        Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
-                        StrokeThickness="1.2" Fill="Transparent"
-                        Width="14" Height="16" Stretch="Uniform" Margin="0,0,5,0"/>
-                  <TextBlock Text="{x:Static props:Resources.Button_ExtractDiff}" VerticalAlignment="Center"/>
-                </StackPanel>
-              </Button>
-            </StackPanel>
-            <TextBlock Text="Diff" HorizontalAlignment="Center"
-                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
-          </StackPanel>
-
-          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+          <Border Style="{StaticResource ToolbarGroup}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Bottom" Text="Diff" HorizontalAlignment="Center"
+                         FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,2"/>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+                <Button x:Name="DiffButton"
+                        Style="{StaticResource ToolbarPrimaryButton}"
+                        Click="DiffButton_Click"
+                        IsEnabled="{Binding Executable}"
+                        Padding="10,4">
+                  <StackPanel Orientation="Horizontal">
+                    <Path Data="M2,0 L10,0 L14,4 L14,16 L2,16 Z M10,0 L10,4 L14,4"
+                          Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                          StrokeThickness="1.2" Fill="Transparent"
+                          Width="14" Height="16" Stretch="Uniform" Margin="0,0,5,0"/>
+                    <TextBlock Text="{x:Static props:Resources.Button_ExtractDiff}" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+            </DockPanel>
+          </Border>
 
           <!--── Group: Merge ──-->
-          <StackPanel Margin="4,0">
-            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-              <Button x:Name="SaveMergeButton"
-                      Click="SaveMergeButton_Click"
-                      Padding="10,4">
-                <StackPanel Orientation="Horizontal">
-                  <Path Data="M3,0 L13,0 L13,12 L8,16 L3,12 Z M6,8 L10,8 L10,4 L6,4 Z"
-                        Fill="#10B981" Width="14" Height="16" Stretch="Uniform" Margin="0,0,5,0"/>
-                  <TextBlock Text="{x:Static props:Resources.Button_SaveMerge}" VerticalAlignment="Center"/>
-                </StackPanel>
-              </Button>
-            </StackPanel>
-            <TextBlock Text="Merge" HorizontalAlignment="Center"
-                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
-          </StackPanel>
-
-          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+          <Border Style="{StaticResource ToolbarGroup}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Bottom" Text="Merge" HorizontalAlignment="Center"
+                         FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,2"/>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+                <Button x:Name="SaveMergeButton"
+                        Click="SaveMergeButton_Click"
+                        Padding="10,4">
+                  <StackPanel Orientation="Horizontal">
+                    <Path Data="M3,0 L13,0 L13,12 L8,16 L3,12 Z M6,8 L10,8 L10,4 L6,4 Z"
+                          Fill="#10B981" Width="14" Height="16" Stretch="Uniform" Margin="0,0,5,0"/>
+                    <TextBlock Text="{x:Static props:Resources.Button_SaveMerge}" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+            </DockPanel>
+          </Border>
 
           <!--── Group: History ──-->
-          <StackPanel Margin="4,0">
-            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-              <Button x:Name="HistoryButton" Style="{StaticResource ToolbarButton}"
-                      Padding="6,3" Click="HistoryButton_Click">
-                <StackPanel Orientation="Horizontal">
-                  <Path Data="M8,0 A8,8 0 1 0 16,8 A8,8 0 1 0 8,0 M8,3 L8,9 L12,9"
-                        Stroke="#5F6672" StrokeThickness="1.4" Fill="Transparent"
-                        Width="15" Height="15" Stretch="Uniform"/>
-                  <Path Data="M0,0 L4,3 L8,0" Stroke="#5F6672" StrokeThickness="1.2" Fill="Transparent"
-                        Width="8" Height="4" Stretch="Uniform" Margin="2,0,0,0" VerticalAlignment="Center"/>
-                </StackPanel>
-              </Button>
-            </StackPanel>
-            <TextBlock Text="History" HorizontalAlignment="Center"
-                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
-          </StackPanel>
-
-          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+          <Border Style="{StaticResource ToolbarGroup}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Bottom" Text="History" HorizontalAlignment="Center"
+                         FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,2"/>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+                <Button x:Name="HistoryButton" Style="{StaticResource ToolbarButton}"
+                        Padding="6,3" Click="HistoryButton_Click">
+                  <StackPanel Orientation="Horizontal">
+                    <Path Data="M8,0 A8,8 0 1 0 16,8 A8,8 0 1 0 8,0 M8,3 L8,9 L12,9"
+                          Stroke="#5F6672" StrokeThickness="1.4" Fill="Transparent"
+                          Width="15" Height="15" Stretch="Uniform"/>
+                    <Path Data="M0,0 L4,3 L8,0" Stroke="#5F6672" StrokeThickness="1.2" Fill="Transparent"
+                          Width="8" Height="4" Stretch="Uniform" Margin="2,0,0,0" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+              </StackPanel>
+            </DockPanel>
+          </Border>
 
           <!--── Group: Display ──-->
-          <StackPanel Margin="4,0">
-            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-              <RadioButton x:Name="ShowAllRadioButton" Content="{x:Static props:Resources.RadioButton_ShowAll}"
-                           Margin="4,2" IsChecked="True"
-                           Checked="ShowAllRadioButton_Checked"/>
-              <RadioButton x:Name="ShowOnlyDiffRadioButton" Content="{x:Static props:Resources.RadioButton_ShowOnlyDiff}"
-                           Margin="4,2" IsChecked="False"
-                           Checked="ShowOnlyDiffRadioButton_Checked"/>
-            </StackPanel>
-            <TextBlock Text="{x:Static props:Resources.GroupBox_DisplayFormat}" HorizontalAlignment="Center"
-                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
-          </StackPanel>
-
-          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+          <Border Style="{StaticResource ToolbarGroup}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Bottom" Text="{x:Static props:Resources.GroupBox_DisplayFormat}" HorizontalAlignment="Center"
+                         FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,2"/>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+                <RadioButton x:Name="ShowAllRadioButton" Content="{x:Static props:Resources.RadioButton_ShowAll}"
+                             Margin="4,2" IsChecked="True"
+                             Checked="ShowAllRadioButton_Checked"/>
+                <RadioButton x:Name="ShowOnlyDiffRadioButton" Content="{x:Static props:Resources.RadioButton_ShowOnlyDiff}"
+                             Margin="4,2" IsChecked="False"
+                             Checked="ShowOnlyDiffRadioButton_Checked"/>
+              </StackPanel>
+            </DockPanel>
+          </Border>
 
           <!--── Group: Navigate ──-->
-          <StackPanel Margin="4,0">
-            <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+          <Border Style="{StaticResource ToolbarGroup}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Bottom" Text="Navigate" HorizontalAlignment="Center"
+                         FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,2"/>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Margin="0,2,0,0">
 
-              <!--Modified Cells-->
-              <StackPanel Margin="2,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                  <Button x:Name="PrevModifiedCellButton" Style="{StaticResource ToolbarButton}"
-                          Content="◀" FontSize="11" Padding="5,2"
-                          Click="PrevModifiedCellButton_Click"
-                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Left}"/>
-                  <Button x:Name="NextModifiedCellButton" Style="{StaticResource ToolbarButton}"
-                          Content="▶" FontSize="11" Padding="5,2"
-                          Click="NextModifiedCellButton_Click"
-                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Right}"/>
+                <!--Modified Cells-->
+                <StackPanel Margin="2,0">
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="PrevModifiedCellButton" Style="{StaticResource ToolbarButton}"
+                            Content="◀" FontSize="11" Padding="5,2"
+                            Click="PrevModifiedCellButton_Click"
+                            ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Left}"/>
+                    <Button x:Name="NextModifiedCellButton" Style="{StaticResource ToolbarButton}"
+                            Content="▶" FontSize="11" Padding="5,2"
+                            Click="NextModifiedCellButton_Click"
+                            ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Right}"/>
+                  </StackPanel>
+                  <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}">
+                    <Run Text="{Binding ModifiedCellCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="cells"/>
+                  </TextBlock>
                 </StackPanel>
-                <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}">
-                  <Run Text="{Binding ModifiedCellCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="cells"/>
-                </TextBlock>
-              </StackPanel>
 
-              <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="4,2,4,0"/>
+                <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="4,2,4,0"/>
 
-              <!--Modified Rows-->
-              <StackPanel Margin="2,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                  <Button x:Name="PrevModifiedRowButton" Style="{StaticResource ToolbarButton}"
-                          Content="◀" FontSize="11" Padding="5,2"
-                          Click="PrevModifiedRowButton_Click"
-                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Up}"/>
-                  <Button x:Name="NextModifiedRowButton" Style="{StaticResource ToolbarButton}"
-                          Content="▶" FontSize="11" Padding="5,2"
-                          Click="NextModifiedRowButton_Click"
-                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Down}"/>
+                <!--Modified Rows-->
+                <StackPanel Margin="2,0">
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="PrevModifiedRowButton" Style="{StaticResource ToolbarButton}"
+                            Content="◀" FontSize="11" Padding="5,2"
+                            Click="PrevModifiedRowButton_Click"
+                            ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Up}"/>
+                    <Button x:Name="NextModifiedRowButton" Style="{StaticResource ToolbarButton}"
+                            Content="▶" FontSize="11" Padding="5,2"
+                            Click="NextModifiedRowButton_Click"
+                            ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Down}"/>
+                  </StackPanel>
+                  <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}">
+                    <Run Text="{Binding ModifiedRowCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="rows"/>
+                  </TextBlock>
                 </StackPanel>
-                <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}">
-                  <Run Text="{Binding ModifiedRowCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="rows"/>
-                </TextBlock>
-              </StackPanel>
 
-              <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="4,2,4,0"/>
+                <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="4,2,4,0"/>
 
-              <!--Added Rows-->
-              <StackPanel Margin="2,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                  <Button x:Name="PrevAddedRowButton" Style="{StaticResource ToolbarButton}"
-                          Content="◀" FontSize="11" Padding="5,2"
-                          Click="PrevAddedRowButton_Click"
-                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_I}"/>
-                  <Button x:Name="NextAddedRowButton" Style="{StaticResource ToolbarButton}"
-                          Content="▶" FontSize="11" Padding="5,2"
-                          Click="NextAddedRowButton_Click"
-                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_K}"/>
+                <!--Added Rows-->
+                <StackPanel Margin="2,0">
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="PrevAddedRowButton" Style="{StaticResource ToolbarButton}"
+                            Content="◀" FontSize="11" Padding="5,2"
+                            Click="PrevAddedRowButton_Click"
+                            ToolTip="{x:Static props:Resources.Shortcut_Ctrl_I}"/>
+                    <Button x:Name="NextAddedRowButton" Style="{StaticResource ToolbarButton}"
+                            Content="▶" FontSize="11" Padding="5,2"
+                            Click="NextAddedRowButton_Click"
+                            ToolTip="{x:Static props:Resources.Shortcut_Ctrl_K}"/>
+                  </StackPanel>
+                  <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="#16A34A">
+                    <Run Text="{Binding AddedRowCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="added"/>
+                  </TextBlock>
                 </StackPanel>
-                <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="#16A34A">
-                  <Run Text="{Binding AddedRowCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="added"/>
-                </TextBlock>
-              </StackPanel>
 
-              <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="4,2,4,0"/>
+                <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="4,2,4,0"/>
 
-              <!--Removed Rows-->
-              <StackPanel Margin="2,0">
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                  <Button x:Name="PrevRemovedRowButton" Style="{StaticResource ToolbarButton}"
-                          Content="◀" FontSize="11" Padding="5,2"
-                          Click="PrevRemovedRowButton_Click"
-                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_O}"/>
-                  <Button x:Name="NextRemovedRowButton" Style="{StaticResource ToolbarButton}"
-                          Content="▶" FontSize="11" Padding="5,2"
-                          Click="NextRemovedRowButton_Click"
-                          ToolTip="{x:Static props:Resources.Shortcut_Ctrl_L}"/>
+                <!--Removed Rows-->
+                <StackPanel Margin="2,0">
+                  <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button x:Name="PrevRemovedRowButton" Style="{StaticResource ToolbarButton}"
+                            Content="◀" FontSize="11" Padding="5,2"
+                            Click="PrevRemovedRowButton_Click"
+                            ToolTip="{x:Static props:Resources.Shortcut_Ctrl_O}"/>
+                    <Button x:Name="NextRemovedRowButton" Style="{StaticResource ToolbarButton}"
+                            Content="▶" FontSize="11" Padding="5,2"
+                            Click="NextRemovedRowButton_Click"
+                            ToolTip="{x:Static props:Resources.Shortcut_Ctrl_L}"/>
+                  </StackPanel>
+                  <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="#DC2626">
+                    <Run Text="{Binding RemovedRowCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="removed"/>
+                  </TextBlock>
                 </StackPanel>
-                <TextBlock HorizontalAlignment="Center" FontSize="10" Foreground="#DC2626">
-                  <Run Text="{Binding RemovedRowCount, StringFormat='{}{0}', Mode=OneWay}"/> <Run Text="removed"/>
-                </TextBlock>
+
               </StackPanel>
-
-            </StackPanel>
-            <TextBlock Text="Navigate" HorizontalAlignment="Center"
-                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,3"/>
-          </StackPanel>
-
-          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+            </DockPanel>
+          </Border>
 
           <!--── Group: Search ──-->
-          <StackPanel Margin="4,0">
-            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-              <Button Style="{StaticResource ToolbarButton}" Padding="5,3"
-                      Click="FindButton_Click"
-                      ToolTip="Ctrl+F">
-                <Path Data="M10,0 A5,5 0 1 0 10,10 A5,5 0 1 0 10,0 M14,10 L18,14"
-                      Stroke="#5F6672" StrokeThickness="1.5" Fill="Transparent"
-                      Width="16" Height="14" Stretch="Uniform"/>
-              </Button>
-              <ComboBox x:Name="SearchTextCombobox" Width="160" IsEditable="True" Margin="4,0"
-                        PreviewKeyDown="SearchTextCombobox_PreviewKeyDown"/>
-              <CheckBox x:Name="ExactMatchCheckBox" Content="{x:Static props:Resources.Word_ExactMatch}"
-                        Margin="4,0" VerticalAlignment="Center" IsChecked="False"/>
-              <CheckBox x:Name="CaseSensitiveCheckBox" Content="{x:Static props:Resources.Word_CaseSensitive}"
-                        Margin="4,0" VerticalAlignment="Center" IsChecked="False"/>
-              <CheckBox x:Name="RegexCheckBox" Content="{x:Static props:Resources.Word_Regex}"
-                        Margin="4,0" VerticalAlignment="Center" IsChecked="False"/>
-              <Button x:Name="PrevMatchCellButton" Style="{StaticResource ToolbarButton}"
-                      Content="◀" FontSize="11" Padding="5,2" Margin="2,0"
-                      Click="PrevMatchCellButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_F8}"/>
-              <Button x:Name="NextMatchCellButton" Style="{StaticResource ToolbarButton}"
-                      Content="▶" FontSize="11" Padding="5,2"
-                      Click="NextMatchCellButton_Click"
-                      ToolTip="{x:Static props:Resources.Shortcut_F9}"/>
-            </StackPanel>
-            <TextBlock Text="{x:Static props:Resources.Word_Search}" HorizontalAlignment="Center"
-                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
-          </StackPanel>
-
-          <Border Width="1" Background="{StaticResource BorderLightBrush}" Margin="2,6,2,16"/>
+          <Border Style="{StaticResource ToolbarGroup}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Bottom" Text="{x:Static props:Resources.Word_Search}" HorizontalAlignment="Center"
+                         FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,2"/>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+                <Button Style="{StaticResource ToolbarButton}" Padding="5,3"
+                        Click="FindButton_Click"
+                        ToolTip="Ctrl+F">
+                  <Path Data="M10,0 A5,5 0 1 0 10,10 A5,5 0 1 0 10,0 M14,10 L18,14"
+                        Stroke="#5F6672" StrokeThickness="1.5" Fill="Transparent"
+                        Width="16" Height="14" Stretch="Uniform"/>
+                </Button>
+                <ComboBox x:Name="SearchTextCombobox" Width="160" IsEditable="True" Margin="4,0"
+                          PreviewKeyDown="SearchTextCombobox_PreviewKeyDown"/>
+                <CheckBox x:Name="ExactMatchCheckBox" Content="{x:Static props:Resources.Word_ExactMatch}"
+                          Margin="4,0" VerticalAlignment="Center" IsChecked="False"/>
+                <CheckBox x:Name="CaseSensitiveCheckBox" Content="{x:Static props:Resources.Word_CaseSensitive}"
+                          Margin="4,0" VerticalAlignment="Center" IsChecked="False"/>
+                <CheckBox x:Name="RegexCheckBox" Content="{x:Static props:Resources.Word_Regex}"
+                          Margin="4,0" VerticalAlignment="Center" IsChecked="False"/>
+                <Button x:Name="PrevMatchCellButton" Style="{StaticResource ToolbarButton}"
+                        Content="◀" FontSize="11" Padding="5,2" Margin="2,0"
+                        Click="PrevMatchCellButton_Click"
+                        ToolTip="{x:Static props:Resources.Shortcut_F8}"/>
+                <Button x:Name="NextMatchCellButton" Style="{StaticResource ToolbarButton}"
+                        Content="▶" FontSize="11" Padding="5,2"
+                        Click="NextMatchCellButton_Click"
+                        ToolTip="{x:Static props:Resources.Shortcut_F9}"/>
+              </StackPanel>
+            </DockPanel>
+          </Border>
 
           <!--── Group: Options ──-->
-          <StackPanel Margin="4,0">
-            <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-              <CheckBox x:Name="IgnoreFileSettingCheckbox"
-                        Content="{x:Static props:Resources.Label_IgnoreFileSetting}"
-                        Margin="4,2" VerticalAlignment="Center"/>
-            </StackPanel>
-            <TextBlock Text="Options" HorizontalAlignment="Center"
-                       FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,3"/>
-          </StackPanel>
+          <Border Style="{StaticResource ToolbarGroup}">
+            <DockPanel>
+              <TextBlock DockPanel.Dock="Bottom" Text="Options" HorizontalAlignment="Center"
+                         FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,2"/>
+              <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+                <CheckBox x:Name="IgnoreFileSettingCheckbox"
+                          Content="{x:Static props:Resources.Label_IgnoreFileSetting}"
+                          Margin="4,2" VerticalAlignment="Center"/>
+              </StackPanel>
+            </DockPanel>
+          </Border>
 
         </StackPanel>
       </Border>

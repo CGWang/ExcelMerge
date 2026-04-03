@@ -573,6 +573,16 @@
         </Setter>
     </Style>
 
+    <!-- ============ Toolbar Group Container ============ -->
+    <Style x:Key="ToolbarGroup" TargetType="Border">
+        <Setter Property="BorderBrush" Value="#CDD1D8"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="Padding" Value="4,0,4,0"/>
+        <Setter Property="Margin" Value="2,2"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+    </Style>
+
     <!-- ============ GridSplitter ============ -->
     <Style TargetType="GridSplitter">
         <Setter Property="Background" Value="{StaticResource BorderLightBrush}"/>

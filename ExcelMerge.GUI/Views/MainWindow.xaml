@@ -101,10 +101,6 @@
                               Command="{Binding ChangeLanguageCommand}"
                               CommandParameter="en-US"
                               IsEnabled="{Binding CultureName,Converter={StaticResource CultureNameConverter}, ConverterParameter='en-US'}"/>
-                    <MenuItem Header="{x:Static props:Resources.Word_Japanese}"
-                              Command="{Binding ChangeLanguageCommand}"
-                              CommandParameter="ja-JP"
-                              IsEnabled="{Binding CultureName,Converter={StaticResource CultureNameConverter}, ConverterParameter='ja-JP'}"/>
                     <MenuItem Header="{x:Static props:Resources.Word_Chinese}"
                               Command="{Binding ChangeLanguageCommand}"
                               CommandParameter="zh-CN"
