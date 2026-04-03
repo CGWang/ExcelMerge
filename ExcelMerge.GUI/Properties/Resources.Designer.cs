@@ -920,6 +920,15 @@ namespace ExcelMerge.GUI.Properties {
         /// <summary>
         ///   Cancel に類似しているローカライズされた文字列を検索します。
         /// </summary>
+        public static string Word_Chinese {
+            get {
+                return ResourceManager.GetString("Word_Chinese", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Cancel に類似しているローカライズされた文字列を検索します。
+        /// </summary>
         public static string Word_Cancel {
             get {
                 return ResourceManager.GetString("Word_Cancel", resourceCulture);

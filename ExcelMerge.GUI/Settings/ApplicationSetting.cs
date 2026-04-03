@@ -267,7 +267,7 @@ namespace ExcelMerge.GUI.Settings
         {
             if (string.IsNullOrEmpty(Culture))
             {
-                Culture = System.Threading.Thread.CurrentThread.CurrentCulture.Name;
+                Culture = System.Threading.Thread.CurrentThread.CurrentUICulture.Name;
                 isChanged |= true;
             }
 
