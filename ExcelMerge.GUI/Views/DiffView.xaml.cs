@@ -94,6 +94,7 @@ namespace ExcelMerge.GUI.Views
 
             config.SrcSheetIndex = SrcSheetCombobox.SelectedIndex;
             config.DstSheetIndex = DstSheetCombobox.SelectedIndex;
+            config.CompareFormula = CompareFormulaCheckbox.IsChecked == true;
 
             if (srcFileSetting != null)
             {
@@ -412,6 +413,7 @@ namespace ExcelMerge.GUI.Views
 
                 diffConfig.SrcSheetIndex = Math.Max(SrcSheetCombobox.SelectedIndex, 0);
                 diffConfig.DstSheetIndex = Math.Max(DstSheetCombobox.SelectedIndex, 0);
+                diffConfig.CompareFormula = CompareFormulaCheckbox.IsChecked == true;
             }
 
             return Tuple.Create(srcSetting, dstSetting);
@@ -481,8 +483,9 @@ namespace ExcelMerge.GUI.Views
             var diff = ExecuteDiff(srcSheet, dstSheet);
             mergeResult = new MergeResult(diff);
 
-            var srcModel = new DiffGridModel(diff, DiffType.Source) { MergeResult = mergeResult };
-            var dstModel = new DiffGridModel(diff, DiffType.Dest) { MergeResult = mergeResult };
+            var compareFormula = CompareFormulaCheckbox.IsChecked == true;
+            var srcModel = new DiffGridModel(diff, DiffType.Source) { MergeResult = mergeResult, CompareFormula = compareFormula };
+            var dstModel = new DiffGridModel(diff, DiffType.Dest) { MergeResult = mergeResult, CompareFormula = compareFormula };
             SrcDataGrid.Model = srcModel;
             DstDataGrid.Model = dstModel;
 
@@ -725,6 +728,11 @@ namespace ExcelMerge.GUI.Views
         {
             var args = new DiffViewEventArgs<FastGridControl>(null, container, TargetType.First);
             DataGridEventDispatcher.Instance.DispatchDisplayFormatChangeEvent(args, true);
+        }
+
+        private void CompareFormulaCheckbox_Changed(object sender, RoutedEventArgs e)
+        {
+            ExecuteDiff();
         }
 
         private bool ValidateDataGrids()

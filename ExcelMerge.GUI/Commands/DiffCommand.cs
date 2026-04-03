@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
+using System.Windows;
 using ExcelMerge.GUI.Views;
 using ExcelMerge.GUI.ViewModels;
 
@@ -27,6 +28,20 @@ namespace ExcelMerge.GUI.Commands
             var diffViewModel = new DiffViewModel(Option.SrcPath, Option.DstPath, windowViewModel);
             window.DataContext = windowViewModel;
             diffView.DataContext = diffViewModel;
+
+            var hasBaseName = !string.IsNullOrEmpty(Option.BaseName);
+            var hasMineName = !string.IsNullOrEmpty(Option.MineName);
+            if (hasBaseName || hasMineName)
+            {
+                var baseName = hasBaseName ? Option.BaseName : Path.GetFileName(Option.SrcPath);
+                var mineName = hasMineName ? Option.MineName : Path.GetFileName(Option.DstPath);
+                window.Title = $"ExcelMerge - {baseName} \u2194 {mineName}";
+            }
+
+            if (Option.QuitOnClose)
+            {
+                window.Closed += (sender, args) => Application.Current.Shutdown();
+            }
 
             App.Current.MainWindow = window;
             window.Show();

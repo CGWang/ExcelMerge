@@ -57,6 +57,7 @@ namespace ExcelMerge.GUI.Models
         public DiffType DiffType { get; private set; }
         public ExcelSheetDiff SheetDiff { get; private set; }
         public MergeResult MergeResult { get; set; }
+        public bool CompareFormula { get; set; }
 
         private static readonly Color MergedCellColor = Color.FromRgb(144, 238, 144); // LightGreen
         private static readonly Color RowIndicatorColor = Color.FromRgb(180, 40, 40);
@@ -168,6 +169,14 @@ namespace ExcelMerge.GUI.Models
             return SheetDiff.Rows.TryGetValue(row, out rowDiff);
         }
 
+        private string GetDisplayValue(ExcelCell cell)
+        {
+            if (CompareFormula && !string.IsNullOrEmpty(cell.Formula))
+                return cell.Formula;
+
+            return cell.Value;
+        }
+
         private string GetCellText(ExcelCellDiff cellDiff)
         {
             // If merge decision exists, show the chosen value
@@ -175,19 +184,19 @@ namespace ExcelMerge.GUI.Models
             {
                 var decision = MergeResult.GetDecision(cellDiff.RowIndex, cellDiff.ColumnIndex);
                 if (decision.HasValue)
-                    return decision.Value == MergeSide.Src ? cellDiff.SrcCell.Value : cellDiff.DstCell.Value;
+                    return decision.Value == MergeSide.Src ? GetDisplayValue(cellDiff.SrcCell) : GetDisplayValue(cellDiff.DstCell);
             }
 
             switch (cellDiff.Status)
             {
                 case ExcelCellStatus.None:
-                    return cellDiff.SrcCell.Value;
+                    return GetDisplayValue(cellDiff.SrcCell);
                 case ExcelCellStatus.Modified:
-                    return DiffType == DiffType.Source ? cellDiff.SrcCell.Value : cellDiff.DstCell.Value;
+                    return DiffType == DiffType.Source ? GetDisplayValue(cellDiff.SrcCell) : GetDisplayValue(cellDiff.DstCell);
                 case ExcelCellStatus.Added:
-                    return DiffType == DiffType.Source ? cellDiff.SrcCell.Value : cellDiff.DstCell.Value;
+                    return DiffType == DiffType.Source ? GetDisplayValue(cellDiff.SrcCell) : GetDisplayValue(cellDiff.DstCell);
                 case ExcelCellStatus.Removed:
-                    return DiffType == DiffType.Source ? cellDiff.SrcCell.Value : cellDiff.DstCell.Value;
+                    return DiffType == DiffType.Source ? GetDisplayValue(cellDiff.SrcCell) : GetDisplayValue(cellDiff.DstCell);
             }
 
             return string.Empty;

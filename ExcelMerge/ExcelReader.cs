@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using NPOI.SS.UserModel;
 
 namespace ExcelMerge
@@ -19,8 +19,9 @@ namespace ExcelMerge
                 {
                     var cell = row.GetCell(columnIndex);
                     var stringValue = ExcelUtility.GetCellStringValue(cell);
+                    var formula = ExcelUtility.GetCellFormula(cell);
 
-                    cells.Add(new ExcelCell(stringValue, columnIndex, rowIndex));
+                    cells.Add(new ExcelCell(stringValue, formula, columnIndex, rowIndex));
                 }
 
                 yield return new ExcelRow(actualRowIndex++, cells);

@@ -51,6 +51,17 @@ namespace ExcelMerge
             return GetCellValue(cell).ToString();
         }
 
+        public static string GetCellFormula(ICell cell)
+        {
+            if (cell == null)
+                return string.Empty;
+
+            if (cell.CellType == CellType.Formula)
+                return "=" + cell.CellFormula;
+
+            return string.Empty;
+        }
+
         public static void CreateWorkbook(string path, ExcelWorkbookType workbookType)
         {
             if (!ValidateExtension(path, workbookType))

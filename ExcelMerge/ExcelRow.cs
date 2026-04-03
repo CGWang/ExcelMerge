@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -38,7 +38,16 @@ namespace ExcelMerge
             if (other == null)
                 return false;
 
-            return GetHashCode() == other.GetHashCode();
+            if (Cells.Count != other.Cells.Count)
+                return false;
+
+            for (int i = 0; i < Cells.Count; i++)
+            {
+                if (Cells[i].Value != other.Cells[i].Value)
+                    return false;
+            }
+
+            return true;
         }
 
         public bool IsBlank()
@@ -55,32 +64,54 @@ namespace ExcelMerge
     internal class RowComparer : IEqualityComparer<ExcelRow>
     {
         public HashSet<int> IgnoreColumns { get; private set; }
+        public bool CompareFormula { get; private set; }
 
-        public RowComparer(HashSet<int> ignoreColumns)
+        public RowComparer(HashSet<int> ignoreColumns, bool compareFormula = false)
         {
             IgnoreColumns = ignoreColumns;
+            CompareFormula = compareFormula;
         }
 
         public bool Equals(ExcelRow x, ExcelRow y)
         {
-            return GetHashCode(x).Equals(GetHashCode(y));
+            if (x == null && y == null) return true;
+            if (x == null || y == null) return false;
+            if (x.Cells.Count != y.Cells.Count) return false;
+
+            for (int i = 0; i < x.Cells.Count; i++)
+            {
+                if (IgnoreColumns.Contains(i))
+                    continue;
+
+                var xVal = GetCellCompareValue(x.Cells[i]);
+                var yVal = GetCellCompareValue(y.Cells[i]);
+                if (xVal != yVal)
+                    return false;
+            }
+
+            return true;
         }
 
         public int GetHashCode(ExcelRow obj)
         {
             var hash = 7;
-            var index = 0;
-            foreach (var cell in obj.Cells)
+            for (int i = 0; i < obj.Cells.Count; i++)
             {
-                if (IgnoreColumns.Contains(index))
+                if (IgnoreColumns.Contains(i))
                     continue;
 
-                hash = hash * 13 + cell.Value.GetHashCode();
-
-                index++;
+                hash = hash * 13 + GetCellCompareValue(obj.Cells[i]).GetHashCode();
             }
 
             return hash;
+        }
+
+        private string GetCellCompareValue(ExcelCell cell)
+        {
+            if (CompareFormula && !string.IsNullOrEmpty(cell.Formula))
+                return cell.Formula;
+
+            return cell.Value;
         }
     }
 }

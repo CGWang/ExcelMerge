@@ -128,19 +128,24 @@ namespace ExcelMerge
 
             var option = new DiffOption<ExcelRow>();
             option.EqualityComparer =
-                new RowComparer(new HashSet<int>(columnStatusMap.Where(i => i.Value != ExcelColumnStatus.None).Select(i => i.Key)));
+                new RowComparer(new HashSet<int>(columnStatusMap.Where(i => i.Value != ExcelColumnStatus.None).Select(i => i.Key)), config.CompareFormula);
 
             foreach (var row in src.Rows.Values)
             {
                 var shifted = new List<ExcelCell>();
                 var index = 0;
                 var queue = new Queue<ExcelCell>(row.Cells);
-                while (queue.Any())
+                while (queue.Any() || index < columnStatusMap.Count)
                 {
+                    if (!columnStatusMap.ContainsKey(index))
+                        break;
+
                     if (columnStatusMap[index] == ExcelColumnStatus.Inserted)
                         shifted.Add(new ExcelCell(string.Empty, 0, 0));
-                    else
+                    else if (queue.Any())
                         shifted.Add(queue.Dequeue());
+                    else
+                        shifted.Add(new ExcelCell(string.Empty, 0, 0));
 
                     index++;
                 }
@@ -153,12 +158,17 @@ namespace ExcelMerge
                 var shifted = new List<ExcelCell>();
                 var index = 0;
                 var queue = new Queue<ExcelCell>(row.Cells);
-                while (queue.Any())
+                while (queue.Any() || index < columnStatusMap.Count)
                 {
+                    if (!columnStatusMap.ContainsKey(index))
+                        break;
+
                     if (columnStatusMap[index] == ExcelColumnStatus.Deleted)
                         shifted.Add(new ExcelCell(string.Empty, 0, 0));
-                    else
+                    else if (queue.Any())
                         shifted.Add(queue.Dequeue());
+                    else
+                        shifted.Add(new ExcelCell(string.Empty, 0, 0));
 
                     index++;
                 }
@@ -185,7 +195,7 @@ namespace ExcelMerge
             }
 
             var sheetDiff = new ExcelSheetDiff();
-            DiffCells(resultArray, sheetDiff, columnStatusMap);
+            DiffCells(resultArray, sheetDiff, columnStatusMap, config.CompareFormula);
 
             return sheetDiff;
         }
@@ -252,17 +262,17 @@ namespace ExcelMerge
         }
 
         private static void DiffCells(
-            IEnumerable<DiffResult<ExcelRow>> results, ExcelSheetDiff sheetDiff, Dictionary<int, ExcelColumnStatus> columnStatusMap)
+            IEnumerable<DiffResult<ExcelRow>> results, ExcelSheetDiff sheetDiff, Dictionary<int, ExcelColumnStatus> columnStatusMap, bool compareFormula = false)
         {
             foreach (var result in results)
             {
                 switch (result.Status)
                 {
                     case DiffStatus.Equal:
-                        DiffCellsCaseEqual(result, sheetDiff, columnStatusMap);
+                        DiffCellsCaseEqual(result, sheetDiff, columnStatusMap, compareFormula);
                         break;
                     case DiffStatus.Modified:
-                        DiffCellsCaseEqual(result, sheetDiff, columnStatusMap);
+                        DiffCellsCaseEqual(result, sheetDiff, columnStatusMap, compareFormula);
                         break;
                     case DiffStatus.Deleted:
                         DiffCellsCaseDeleted(result, sheetDiff, columnStatusMap);
@@ -272,6 +282,14 @@ namespace ExcelMerge
                         break;
                 }
             }
+        }
+
+        private static string GetCompareValue(ExcelCell cell, bool compareFormula)
+        {
+            if (compareFormula && !string.IsNullOrEmpty(cell.Formula))
+                return cell.Formula;
+
+            return cell.Value;
         }
 
         private static IEnumerable<Tuple<ExcelCell, ExcelCell>> EqualizeColumnCount(
@@ -292,7 +310,7 @@ namespace ExcelMerge
         }
 
         private static void DiffCellsCaseEqual(
-            DiffResult<ExcelRow> result, ExcelSheetDiff sheetDiff, Dictionary<int, ExcelColumnStatus> columnStatusMap)
+            DiffResult<ExcelRow> result, ExcelSheetDiff sheetDiff, Dictionary<int, ExcelColumnStatus> columnStatusMap, bool compareFormula = false)
         {
             var row = sheetDiff.CreateRow();
 
@@ -305,7 +323,9 @@ namespace ExcelMerge
 
                 if (srcCell != null && dstCell != null)
                 {
-                    var status = srcCell.Value.Equals(dstCell.Value) ? ExcelCellStatus.None : ExcelCellStatus.Modified;
+                    var srcCompareValue = GetCompareValue(srcCell, compareFormula);
+                    var dstCompareValue = GetCompareValue(dstCell, compareFormula);
+                    var status = srcCompareValue.Equals(dstCompareValue) ? ExcelCellStatus.None : ExcelCellStatus.Modified;
                     if (columnStatusMap[columnIndex] == ExcelColumnStatus.Deleted)
                         status = ExcelCellStatus.Removed;
                     else if (columnStatusMap[columnIndex] == ExcelColumnStatus.Inserted)
