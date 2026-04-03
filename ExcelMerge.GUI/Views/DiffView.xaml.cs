@@ -376,8 +376,8 @@ namespace ExcelMerge.GUI.Views
         {
             ExcelWorkbook swb = null;
             ExcelWorkbook dwb = null;
-            var srcPath = SrcPathTextBox.Text;
-            var dstPath = DstPathTextBox.Text;
+            var srcPath = File.Exists(SrcPathTextBox.Text) ? SrcPathTextBox.Text : GetOrCreateEmptyFile();
+            var dstPath = File.Exists(DstPathTextBox.Text) ? DstPathTextBox.Text : GetOrCreateEmptyFile();
             ProgressWindow.DoWorkWithModal(progress =>
             {
                 progress.Report(Properties.Resources.Msg_ReadingFiles);
@@ -436,7 +436,10 @@ namespace ExcelMerge.GUI.Views
 
         private void ExecuteDiff(bool isStartup = false)
         {
-            if (!File.Exists(SrcPathTextBox.Text) || !File.Exists(DstPathTextBox.Text))
+            var srcExists = File.Exists(SrcPathTextBox.Text);
+            var dstExists = File.Exists(DstPathTextBox.Text);
+
+            if (!srcExists && !dstExists)
                 return;
 
             var args = new DiffViewEventArgs<FastGridControl>(null, container, TargetType.First);
@@ -624,15 +627,13 @@ namespace ExcelMerge.GUI.Views
 
         private void PathTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            EnsureEmptyCounterpart();
-
             var src = SrcPathTextBox.Text;
             var dst = DstPathTextBox.Text;
 
             if (src == _lastSrcPath && dst == _lastDstPath)
                 return;
 
-            if (!File.Exists(src) || !File.Exists(dst))
+            if (!File.Exists(src) && !File.Exists(dst))
                 return;
 
             _lastSrcPath = src;
@@ -644,28 +645,11 @@ namespace ExcelMerge.GUI.Views
 
         private void TryAutoExecuteDiff()
         {
-            EnsureEmptyCounterpart();
-
-            if (File.Exists(SrcPathTextBox.Text) && File.Exists(DstPathTextBox.Text))
+            if (File.Exists(SrcPathTextBox.Text) || File.Exists(DstPathTextBox.Text))
                 ExecuteDiff();
         }
 
         private string _emptyFilePath;
-
-        private void EnsureEmptyCounterpart()
-        {
-            var srcExists = File.Exists(SrcPathTextBox.Text);
-            var dstExists = File.Exists(DstPathTextBox.Text);
-
-            if (srcExists && !dstExists && string.IsNullOrWhiteSpace(DstPathTextBox.Text))
-            {
-                DstPathTextBox.Text = GetOrCreateEmptyFile();
-            }
-            else if (dstExists && !srcExists && string.IsNullOrWhiteSpace(SrcPathTextBox.Text))
-            {
-                SrcPathTextBox.Text = GetOrCreateEmptyFile();
-            }
-        }
 
         private string GetOrCreateEmptyFile()
         {
