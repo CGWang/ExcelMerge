@@ -449,30 +449,26 @@ namespace ExcelMerge.GUI.Views
             var srcWorkbook = workbooks.Item1;
             var dstWorkbook = workbooks.Item2;
 
-            // When one side uses internal empty file, populate its ComboBox manually
-            if (!srcExists && srcWorkbook.Sheets.Count > 0 && SrcSheetCombobox.Items.Count == 0)
-            {
-                SrcSheetCombobox.ItemsSource = srcWorkbook.Sheets.Keys.ToList();
-                SrcSheetCombobox.SelectedIndex = 0;
-            }
-            if (!dstExists && dstWorkbook.Sheets.Count > 0 && DstSheetCombobox.Items.Count == 0)
-            {
-                DstSheetCombobox.ItemsSource = dstWorkbook.Sheets.Keys.ToList();
-                DstSheetCombobox.SelectedIndex = 0;
-            }
+            // Always sync ComboBox items from actual workbooks
+            SrcSheetCombobox.ItemsSource = srcWorkbook.Sheets.Keys.ToList();
+            DstSheetCombobox.ItemsSource = dstWorkbook.Sheets.Keys.ToList();
 
             var fileSettings = FindFileSettings(isStartup);
             var srcFileSetting = fileSettings.Item1;
             var dstFileSetting = fileSettings.Item2;
 
-            SrcSheetCombobox.SelectedIndex = diffConfig.SrcSheetIndex;
-            DstSheetCombobox.SelectedIndex = diffConfig.DstSheetIndex;
+            var srcSheetIdx = Math.Min(Math.Max(diffConfig.SrcSheetIndex, 0), srcWorkbook.Sheets.Count - 1);
+            var dstSheetIdx = Math.Min(Math.Max(diffConfig.DstSheetIndex, 0), dstWorkbook.Sheets.Count - 1);
+            SrcSheetCombobox.SelectedIndex = srcSheetIdx;
+            DstSheetCombobox.SelectedIndex = dstSheetIdx;
 
-            if (SrcSheetCombobox.SelectedItem == null || DstSheetCombobox.SelectedItem == null)
+            var srcSheetName = srcWorkbook.Sheets.Keys.ElementAtOrDefault(srcSheetIdx);
+            var dstSheetName = dstWorkbook.Sheets.Keys.ElementAtOrDefault(dstSheetIdx);
+            if (srcSheetName == null || dstSheetName == null)
                 return;
 
-            var srcSheet = srcWorkbook.Sheets[SrcSheetCombobox.SelectedItem.ToString()];
-            var dstSheet = dstWorkbook.Sheets[DstSheetCombobox.SelectedItem.ToString()];
+            var srcSheet = srcWorkbook.Sheets[srcSheetName];
+            var dstSheet = dstWorkbook.Sheets[dstSheetName];
 
             if (srcSheet.Rows.Count > 10000 || dstSheet.Rows.Count > 10000)
                 MessageBox.Show(Properties.Resources.Msg_WarnSize);
