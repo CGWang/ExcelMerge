@@ -8,6 +8,7 @@
         xmlns:props="clr-namespace:ExcelMerge.GUI.Properties"
         xmlns:ctrl="clr-namespace:ExcelMerge.GUI.Controls"
         mc:Ignorable="d"
+        Style="{StaticResource ModernWindow}"
         WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
         Title="ExcelMerge" 

@@ -37,8 +37,9 @@
       <Expander.Header>
         <WrapPanel Orientation="Horizontal" Margin="3">
 
-          <Button x:Name="DiffButton" Content="{x:Static props:Resources.Button_ExtractDiff}" 
-                  Margin="10,0,0,0" Height="40" Padding="5,5"
+          <Button x:Name="DiffButton" Content="{x:Static props:Resources.Button_ExtractDiff}"
+                  Style="{StaticResource PrimaryButton}"
+                  Margin="10,0,0,0" Height="36" Padding="16,6"
                   Click="DiffButton_Click"
                   IsEnabled="{Binding Executable}"/>
 
@@ -228,8 +229,8 @@
       <WrapPanel Orientation="Horizontal" Margin="3">
 
         <Button x:Name="SwapButton" Content="{x:Static props:Resources.ToolTip_Swap}"
-                Height="40"
-                Click="SwapButton_Click" Margin="33,0,0,0" Padding="5,5"
+                Height="36"
+                Click="SwapButton_Click" Margin="33,0,0,0" Padding="12,6"
                 IsEnabled="{Binding Executable}"/>
 
         <GroupBox Header="{x:Static props:Resources.Word_Search}" Margin="10,0,0,0">
