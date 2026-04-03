@@ -154,11 +154,11 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
-              <Button x:Name="PrevModifiedCellButton" Content="←" Width="30" Grid.Column="0" Margin="3"
+              <Button x:Name="PrevModifiedCellButton" Content="◀" Width="36" FontSize="14" Grid.Column="0" Margin="3"
                       Click="PrevModifiedCellButton_Click"
                       ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Left}"
                       />
-              <Button x:Name="NextModifiedCellButton" Content="→" Width="30" Grid.Column="1" Margin="3"
+              <Button x:Name="NextModifiedCellButton" Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
                       Click="NextModifiedCellButton_Click"
                       ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Right}"
                       />
@@ -172,11 +172,11 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
-              <Button x:Name="PrevModifiedRowButton" Content="←" Width="30" Grid.Column="0" Margin="3"
+              <Button x:Name="PrevModifiedRowButton" Content="◀" Width="36" FontSize="14" Grid.Column="0" Margin="3"
                       Click="PrevModifiedRowButton_Click"
                       ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Up}"
                       />
-              <Button x:Name="NextModifiedRowButton" Content="→" Width="30" Grid.Column="1" Margin="3"
+              <Button x:Name="NextModifiedRowButton" Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
                       Click="NextModifiedRowButton_Click"
                       ToolTip="{x:Static props:Resources.Shortcut_Ctrl_Down}"
                       />
@@ -190,11 +190,11 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
-              <Button x:Name="PrevAddedRowButton" Content="←" Width="30"  Grid.Column="0" Margin="3"
+              <Button x:Name="PrevAddedRowButton" Content="◀" Width="36" FontSize="14"  Grid.Column="0" Margin="3"
                       Click="PrevAddedRowButton_Click"
                       ToolTip="{x:Static props:Resources.Shortcut_Ctrl_I}"
                       />
-              <Button x:Name="NextAddedRowButton"  Content="→" Width="30" Grid.Column="1" Margin="3"
+              <Button x:Name="NextAddedRowButton"  Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
                       Click="NextAddedRowButton_Click"
                       ToolTip="{x:Static props:Resources.Shortcut_Ctrl_K}"
                       />
@@ -208,11 +208,11 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
-              <Button x:Name="PrevRemovedRowButton"  Content="←" Width="30" Grid.Column="0" Margin="3"
+              <Button x:Name="PrevRemovedRowButton"  Content="◀" Width="36" FontSize="14" Grid.Column="0" Margin="3"
                       Click="PrevRemovedRowButton_Click"
                       ToolTip="{x:Static props:Resources.Shortcut_Ctrl_O}"
                                     />
-              <Button x:Name="NextRemovedRowButton"  Content="→" Width="30" Grid.Column="1" Margin="3"
+              <Button x:Name="NextRemovedRowButton"  Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
                       Click="NextRemovedRowButton_Click"
                       ToolTip="{x:Static props:Resources.Shortcut_Ctrl_L}"
                       />
@@ -239,10 +239,10 @@
             <CheckBox x:Name="ExactMatchCheckBox" Content="{x:Static props:Resources.Word_ExactMatch}" Margin="3" IsChecked="False"/>
             <CheckBox x:Name="CaseSensitiveCheckBox" Content="{x:Static props:Resources.Word_CaseSensitive}" Margin="3" IsChecked="False"/>
             <CheckBox x:Name="RegexCheckBox" Content="{x:Static props:Resources.Word_Regex}" Margin="3" IsChecked="False"/>
-            <Button x:Name="PrevMatchCellButton"  Content="←" Width="30" Grid.Column="0" Margin="3"
+            <Button x:Name="PrevMatchCellButton"  Content="◀" Width="36" FontSize="14" Grid.Column="0" Margin="3"
                     Click="PrevMatchCellButton_Click"
                     ToolTip="{x:Static props:Resources.Shortcut_F8}"/>
-            <Button x:Name="NextMatchCellButton"  Content="→" Width="30" Grid.Column="1" Margin="3"
+            <Button x:Name="NextMatchCellButton"  Content="▶" Width="36" FontSize="14" Grid.Column="1" Margin="3"
                     Click="NextMatchCellButton_Click"
                     ToolTip="{x:Static props:Resources.Shortcut_F9}"/>
           </StackPanel>
