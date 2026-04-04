@@ -88,35 +88,11 @@ namespace ExcelMerge
                 if (IgnoreColumns.Contains(i))
                     continue;
 
-                if (!AreCellsEqual(x.Cells[i], y.Cells[i]))
+                if (!CellComparer.AreEqual(x.Cells[i], y.Cells[i], CompareFormula, IgnoreWhitespace, NumericPrecision))
                     return false;
             }
 
             return true;
-        }
-
-        private bool AreCellsEqual(ExcelCell a, ExcelCell b)
-        {
-            var aVal = GetCellCompareValue(a);
-            var bVal = GetCellCompareValue(b);
-
-            if (IgnoreWhitespace)
-            {
-                aVal = aVal.Trim();
-                bVal = bVal.Trim();
-            }
-
-            if (aVal == bVal)
-                return true;
-
-            if (NumericPrecision > 0
-                && double.TryParse(aVal, out var aNum)
-                && double.TryParse(bVal, out var bNum))
-            {
-                return Math.Abs(aNum - bNum) <= NumericPrecision;
-            }
-
-            return false;
         }
 
         public int GetHashCode(ExcelRow obj)
@@ -127,34 +103,10 @@ namespace ExcelMerge
                 if (IgnoreColumns.Contains(i))
                     continue;
 
-                hash = hash * 13 + GetNormalizedHashValue(obj.Cells[i]).GetHashCode();
+                hash = hash * 13 + CellComparer.GetNormalizedHashValue(obj.Cells[i], CompareFormula, IgnoreWhitespace, NumericPrecision).GetHashCode();
             }
 
             return hash;
-        }
-
-        private string GetNormalizedHashValue(ExcelCell cell)
-        {
-            var value = GetCellCompareValue(cell);
-
-            if (IgnoreWhitespace)
-                value = value.Trim();
-
-            if (NumericPrecision > 0 && double.TryParse(value, out var num))
-            {
-                var rounded = Math.Round(num / NumericPrecision) * NumericPrecision;
-                return rounded.ToString("R");
-            }
-
-            return value;
-        }
-
-        private string GetCellCompareValue(ExcelCell cell)
-        {
-            if (CompareFormula && !string.IsNullOrEmpty(cell.Formula))
-                return cell.Formula;
-
-            return cell.Value;
         }
     }
 }

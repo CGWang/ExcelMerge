@@ -194,9 +194,7 @@ namespace ExcelMerge.GUI.Models
                 case ExcelCellStatus.None:
                     return GetDisplayValue(cellDiff.SrcCell);
                 case ExcelCellStatus.Modified:
-                    return DiffType == DiffType.Source ? GetDisplayValue(cellDiff.SrcCell) : GetDisplayValue(cellDiff.DstCell);
                 case ExcelCellStatus.Added:
-                    return DiffType == DiffType.Source ? GetDisplayValue(cellDiff.SrcCell) : GetDisplayValue(cellDiff.DstCell);
                 case ExcelCellStatus.Removed:
                     return DiffType == DiffType.Source ? GetDisplayValue(cellDiff.SrcCell) : GetDisplayValue(cellDiff.DstCell);
             }
@@ -491,7 +489,7 @@ namespace ExcelMerge.GUI.Models
             if (useRegex)
             {
                 var regex = new Regex(target);
-                return regex.IsMatch(srcValue) || regex.IsMatch(srcValue);
+                return regex.IsMatch(srcValue) || regex.IsMatch(dstValue);
             }
 
             if (exactMatch)

@@ -221,11 +221,11 @@ namespace ExcelMerge.GUI.Settings
             set { SetProperty(ref fontName, value); }
         }
 
-        private string logForamt = string.Empty;
+        private string logFormat = string.Empty;
         public string LogFormat
         {
-            get { return logForamt; }
-            set { SetProperty(ref logForamt, value); }
+            get { return logFormat; }
+            set { SetProperty(ref logFormat, value); }
         }
 
         private string addedRowLogFormat = string.Empty;

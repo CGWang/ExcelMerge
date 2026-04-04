@@ -898,32 +898,14 @@ namespace ExcelMerge.GUI.Views
 
         private void MovePrevMatchCell()
         {
-            if (!ValidateDataGrids())
-                return;
-
-            var text = SearchTextCombobox.Text;
-            if (string.IsNullOrEmpty(text))
-                return;
-
-            var history = App.Instance.Setting.SearchHistory.ToList();
-            if (history.Contains(text))
-                history.Remove(text);
-
-            history.Insert(0, text);
-            history = history.Take(10).ToList();
-
-            App.Instance.Setting.SearchHistory = new ObservableCollection<string>(history);
-            App.Instance.Setting.Save();
-
-            SearchTextCombobox.ItemsSource = App.Instance.Setting.SearchHistory.ToList();
+            var text = GetSearchTextAndUpdateHistory();
+            if (text == null) return;
 
             var nextCell = (SrcDataGrid.Model as DiffGridModel).GetPreviousMatchCell(
                 SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell, text,
                 ExactMatchCheckBox.IsChecked.Value, CaseSensitiveCheckBox.IsChecked.Value, RegexCheckBox.IsChecked.Value, ShowOnlyDiffRadioButton.IsChecked.Value);
-            if (nextCell.IsEmpty)
-                return;
-
-            SrcDataGrid.CurrentCell = nextCell;
+            if (!nextCell.IsEmpty)
+                SrcDataGrid.CurrentCell = nextCell;
         }
 
         private void NextMatchCellButton_Click(object sender, RoutedEventArgs e)
@@ -933,12 +915,24 @@ namespace ExcelMerge.GUI.Views
 
         private void MoveNextMatchCell()
         {
+            var text = GetSearchTextAndUpdateHistory();
+            if (text == null) return;
+
+            var nextCell = (SrcDataGrid.Model as DiffGridModel).GetNextMatchCell(
+                SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell, text,
+                ExactMatchCheckBox.IsChecked.Value, CaseSensitiveCheckBox.IsChecked.Value, RegexCheckBox.IsChecked.Value, ShowOnlyDiffRadioButton.IsChecked.Value);
+            if (!nextCell.IsEmpty)
+                SrcDataGrid.CurrentCell = nextCell;
+        }
+
+        private string GetSearchTextAndUpdateHistory()
+        {
             if (!ValidateDataGrids())
-                return;
+                return null;
 
             var text = SearchTextCombobox.Text;
             if (string.IsNullOrEmpty(text))
-                return;
+                return null;
 
             var history = App.Instance.Setting.SearchHistory.ToList();
             if (history.Contains(text))
@@ -949,16 +943,9 @@ namespace ExcelMerge.GUI.Views
 
             App.Instance.Setting.SearchHistory = new ObservableCollection<string>(history);
             App.Instance.Setting.Save();
-
             SearchTextCombobox.ItemsSource = App.Instance.Setting.SearchHistory.ToList();
 
-            var nextCell = (SrcDataGrid.Model as DiffGridModel).GetNextMatchCell(
-                SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell, text,
-                ExactMatchCheckBox.IsChecked.Value, CaseSensitiveCheckBox.IsChecked.Value, RegexCheckBox.IsChecked.Value, ShowOnlyDiffRadioButton.IsChecked.Value);
-            if (nextCell.IsEmpty)
-                return;
-
-            SrcDataGrid.CurrentCell = nextCell;
+            return text;
         }
 
         #region Search Overlay

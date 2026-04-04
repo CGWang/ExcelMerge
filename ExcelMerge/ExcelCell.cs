@@ -8,25 +8,8 @@ namespace ExcelMerge
         public int OriginalColumnIndex { get; private set; }
         public int OriginalRowIndex { get; private set; }
 
-        public ExcelCell(string value, int originalColumnIndex, int originalRowIndex)
-        {
-            Value = value;
-            Formula = string.Empty;
-            Comment = string.Empty;
-            OriginalColumnIndex = originalColumnIndex;
-            OriginalRowIndex = originalRowIndex;
-        }
-
-        public ExcelCell(string value, string formula, int originalColumnIndex, int originalRowIndex)
-        {
-            Value = value;
-            Formula = formula ?? string.Empty;
-            Comment = string.Empty;
-            OriginalColumnIndex = originalColumnIndex;
-            OriginalRowIndex = originalRowIndex;
-        }
-
-        public ExcelCell(string value, string formula, string comment, int originalColumnIndex, int originalRowIndex)
+        public ExcelCell(string value, int originalColumnIndex, int originalRowIndex,
+                         string formula = null, string comment = null)
         {
             Value = value;
             Formula = formula ?? string.Empty;

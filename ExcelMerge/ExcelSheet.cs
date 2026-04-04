@@ -285,41 +285,7 @@ namespace ExcelMerge
             }
         }
 
-        private static string GetCompareValue(ExcelCell cell, bool compareFormula)
-        {
-            if (compareFormula && !string.IsNullOrEmpty(cell.Formula))
-                return cell.Formula;
-
-            return cell.Value;
-        }
-
-        private static bool AreCellsEqual(ExcelCell src, ExcelCell dst, bool compareFormula, bool ignoreWhitespace, double numericPrecision)
-        {
-            // Comments must also match for cells to be considered equal
-            if (src.Comment != dst.Comment)
-                return false;
-
-            var srcVal = GetCompareValue(src, compareFormula);
-            var dstVal = GetCompareValue(dst, compareFormula);
-
-            if (ignoreWhitespace)
-            {
-                srcVal = srcVal.Trim();
-                dstVal = dstVal.Trim();
-            }
-
-            if (srcVal.Equals(dstVal))
-                return true;
-
-            if (numericPrecision > 0
-                && double.TryParse(srcVal, out var srcNum)
-                && double.TryParse(dstVal, out var dstNum))
-            {
-                return Math.Abs(srcNum - dstNum) <= numericPrecision;
-            }
-
-            return false;
-        }
+        // Cell comparison logic is centralized in CellComparer
 
         private static IEnumerable<Tuple<ExcelCell, ExcelCell>> EqualizeColumnCount(
             IEnumerable<ExcelCell> srcCells, IEnumerable<ExcelCell> dstCells, Dictionary<int, ExcelColumnStatus> columnStausMap)
@@ -352,7 +318,7 @@ namespace ExcelMerge
 
                 if (srcCell != null && dstCell != null)
                 {
-                    var status = AreCellsEqual(srcCell, dstCell, config.CompareFormula, config.IgnoreWhitespace, config.NumericPrecision)
+                    var status = CellComparer.AreEqual(srcCell, dstCell, config.CompareFormula, config.IgnoreWhitespace, config.NumericPrecision)
                         ? ExcelCellStatus.None : ExcelCellStatus.Modified;
                     if (columnStatusMap[columnIndex] == ExcelColumnStatus.Deleted)
                         status = ExcelCellStatus.Removed;

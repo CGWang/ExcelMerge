@@ -133,10 +133,7 @@ namespace ExcelMerge.GUI
         {
             Setting = setting.DeepClone();
 
-            if (OnSettingUpdated == null)
-                OnSettingUpdated += () => { };
-
-            OnSettingUpdated();
+            OnSettingUpdated?.Invoke();
         }
 
         public void UpdateRecentFiles(string srcPath, string dstPath)

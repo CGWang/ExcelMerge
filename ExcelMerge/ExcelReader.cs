@@ -22,7 +22,7 @@ namespace ExcelMerge
                     var formula = ExcelUtility.GetCellFormula(cell);
                     var comment = ExcelUtility.GetCellComment(cell);
 
-                    cells.Add(new ExcelCell(stringValue, formula, comment, columnIndex, rowIndex));
+                    cells.Add(new ExcelCell(stringValue, columnIndex, rowIndex, formula, comment));
                 }
 
                 yield return new ExcelRow(actualRowIndex++, cells);
