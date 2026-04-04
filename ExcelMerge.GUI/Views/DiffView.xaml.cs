@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.IO;
 using System.Text;
@@ -14,6 +13,7 @@ using ExcelMerge.GUI.Utilities;
 using ExcelMerge.GUI.ViewModels;
 using ExcelMerge.GUI.Settings;
 using ExcelMerge.GUI.Models;
+using ExcelMerge.GUI.Services;
 
 namespace ExcelMerge.GUI.Views
 {
@@ -28,6 +28,7 @@ namespace ExcelMerge.GUI.Views
         private MergeResult mergeResult;
         private ThreeWayDiffResult _threeWayResult;
         private const string baseKey = "base";
+        private readonly SearchService searchService = new SearchService();
 
         public DiffView()
         {
@@ -451,7 +452,11 @@ namespace ExcelMerge.GUI.Views
                         var baseSheet = baseWb.Sheets[baseSheetName];
 
                         // Compute 3-way diff: srcSheet=THEIRS(left), dstSheet=MINE(right)
-                        _threeWayResult = ThreeWayDiff.Compute(baseSheet, dstSheet, srcSheet);
+                        _threeWayResult = ThreeWayDiff.Compute(baseSheet, dstSheet, srcSheet, diffConfig);
+
+                        // Pass 3-way merge result to both grid models for cell coloring
+                        srcModel.ThreeWayMergeResult = _threeWayResult;
+                        dstModel.ThreeWayMergeResult = _threeWayResult;
 
                         // Create BASE grid model by diffing base against itself (no differences shown)
                         var baseDiff = ExcelSheet.Diff(baseSheet, baseSheet, diffConfig);
@@ -930,20 +935,9 @@ namespace ExcelMerge.GUI.Views
             if (!ValidateDataGrids())
                 return null;
 
-            var text = SearchTextCombobox.Text;
-            if (string.IsNullOrEmpty(text))
-                return null;
-
-            var history = App.Instance.Setting.SearchHistory.ToList();
-            if (history.Contains(text))
-                history.Remove(text);
-
-            history.Insert(0, text);
-            history = history.Take(10).ToList();
-
-            App.Instance.Setting.SearchHistory = new ObservableCollection<string>(history);
-            App.Instance.Setting.Save();
-            SearchTextCombobox.ItemsSource = App.Instance.Setting.SearchHistory.ToList();
+            var text = searchService.UpdateSearchHistory(SearchTextCombobox.Text);
+            if (text != null)
+                SearchTextCombobox.ItemsSource = searchService.GetSearchHistory();
 
             return text;
         }
@@ -1083,20 +1077,7 @@ namespace ExcelMerge.GUI.Views
 
         private void CopyToClipboardSelectedCells(string separator)
         {
-            if (copyTargetGrid == null)
-                return;
-
-            var model = copyTargetGrid.Model as DiffGridModel;
-            if (model == null)
-                return;
-
-            var tsv = string.Join(Environment.NewLine,
-               copyTargetGrid.SelectedCells
-              .GroupBy(c => c.Row.Value)
-              .OrderBy(g => g.Key)
-              .Select(g => string.Join(separator, g.Select(c => model.GetCellText(c, true)))));
-
-            Clipboard.SetDataObject(tsv);
+            ClipboardService.CopySelectedCells(copyTargetGrid, separator);
         }
 
         private void UserControl_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -1258,90 +1239,16 @@ namespace ExcelMerge.GUI.Views
         private string BuildCellBaseLog()
         {
             var srcModel = SrcDataGrid.Model as DiffGridModel;
-            if (srcModel == null)
-                return string.Empty;
-
             var dstModel = DstDataGrid.Model as DiffGridModel;
-            if (dstModel == null)
-                return string.Empty;
 
-            var builder = new StringBuilder();
-
-            var selectedCells = SrcDataGrid.SelectedCells;
-
-            var modifiedLogFormat = App.Instance.Setting.LogFormat;
-            var addedLogFormat = App.Instance.Setting.AddedRowLogFormat;
-            var removedLogFormat = App.Instance.Setting.RemovedRowLogFormat;
-
-            foreach (var row in SrcDataGrid.SelectedCells.GroupBy(c => c.Row))
-            {
-                var rowHeaderText = srcModel.GetRowHeaderText(row.Key.Value);
-                if (string.IsNullOrEmpty(rowHeaderText))
-                    rowHeaderText = dstModel.GetRowHeaderText(row.Key.Value);
-
-                if (dstModel.IsAddedRow(row.Key.Value, true))
-                {
-                    var log = addedLogFormat
-                        .Replace("${ROW}", RemoveMultiLine(rowHeaderText));
-
-                    builder.AppendLine(log);
-
-                    continue;
-                }
-
-                if (dstModel.IsRemovedRow(row.Key.Value, true))
-                {
-                    var log = removedLogFormat
-                        .Replace("${ROW}", RemoveMultiLine(rowHeaderText));
-
-                    builder.AppendLine(log);
-
-                    continue;
-                }
-
-                foreach (var cell in row)
-                {
-                    if (cell.Row.Value == srcModel.ColumnHeaderIndex)
-                        continue;
-
-                    var srcText = srcModel.GetCellText(cell, true);
-                    var dstText = dstModel.GetCellText(cell, true);
-                    if (srcText == dstText)
-                        continue;
-
-                    var colHeaderText = srcModel.GetColumnHeaderText(cell.Column.Value);
-
-                    if (string.IsNullOrEmpty(colHeaderText))
-                        colHeaderText = dstModel.GetColumnHeaderText(cell.Column.Value);
-
-                    if (string.IsNullOrEmpty(srcText))
-                        srcText = Properties.Resources.Word_Blank;
-
-                    if (string.IsNullOrEmpty(dstText))
-                        dstText = Properties.Resources.Word_Blank;
-
-                    if (string.IsNullOrEmpty(rowHeaderText))
-                        rowHeaderText = Properties.Resources.Word_Blank;
-
-                    if (string.IsNullOrEmpty(colHeaderText))
-                        colHeaderText = Properties.Resources.Word_Blank;
-
-                    var log = modifiedLogFormat
-                        .Replace("${ROW}", RemoveMultiLine(rowHeaderText))
-                        .Replace("${COL}", RemoveMultiLine(colHeaderText))
-                        .Replace("${LEFT}", RemoveMultiLine(srcText))
-                        .Replace("${RIGHT}", RemoveMultiLine(dstText));
-
-                    builder.AppendLine(log);
-                }
-            }
-
-            return builder.ToString();
-        }
-
-        private string RemoveMultiLine(string log)
-        {
-            return log.Replace("\r\n", " ").Replace("\n", " ").Replace("\r", " ");
+            return LogBuilder.BuildCellBaseLog(
+                srcModel,
+                dstModel,
+                SrcDataGrid.SelectedCells,
+                App.Instance.Setting.LogFormat,
+                App.Instance.Setting.AddedRowLogFormat,
+                App.Instance.Setting.RemovedRowLogFormat,
+                Properties.Resources.Word_Blank);
         }
 
         private void CopyAsTsv_Click(object sender, RoutedEventArgs e)

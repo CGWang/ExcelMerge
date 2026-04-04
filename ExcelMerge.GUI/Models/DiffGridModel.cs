@@ -58,10 +58,14 @@ namespace ExcelMerge.GUI.Models
         public DiffType DiffType { get; private set; }
         public ExcelSheetDiff SheetDiff { get; private set; }
         public MergeResult MergeResult { get; set; }
+        public ThreeWayDiffResult ThreeWayMergeResult { get; set; }
         public bool CompareFormula { get; set; }
 
         private static readonly Color CommentDiffColor = Color.FromRgb(255, 255, 200); // Light yellow for comment-only diff
         private static readonly Color MergedCellColor = Color.FromRgb(144, 238, 144); // LightGreen
+        private static readonly Color AutoMergedColor = Color.FromRgb(220, 255, 220); // Light green for auto-merged
+        private static readonly Color ResolvedConflictColor = Color.FromRgb(255, 240, 200); // Light orange for resolved conflicts
+        private static readonly Color UnresolvedConflictColor = Color.FromRgb(255, 180, 180); // Red for unresolved conflicts
         private static readonly Color RowIndicatorColor = Color.FromRgb(180, 40, 40);
         private static readonly Color ModifiedColumnHeaderColor = Color.FromRgb(255, 220, 220);
         private HashSet<int> _modifiedColumns;
@@ -316,6 +320,29 @@ namespace ExcelMerge.GUI.Models
                 // Only apply comment-only color when value/formula is unchanged
                 if (cell.backgroundColor == null)
                     cell.backgroundColor = CommentDiffColor;
+            }
+
+            // 3-way merge status coloring
+            if (ThreeWayMergeResult != null)
+            {
+                var mappedRow = direct && rowIndexMap.ContainsKey(row) ? rowIndexMap[row] : row;
+                var mergeCell = ThreeWayMergeResult.GetCell(mappedRow, column);
+                if (mergeCell != null)
+                {
+                    switch (mergeCell.Status)
+                    {
+                        case CellMergeStatus.MineOnly:
+                        case CellMergeStatus.TheirsOnly:
+                        case CellMergeStatus.BothSame:
+                            cell.backgroundColor = AutoMergedColor;
+                            break;
+                        case CellMergeStatus.Conflict:
+                            cell.backgroundColor = mergeCell.ResolvedValue != null
+                                ? ResolvedConflictColor
+                                : UnresolvedConflictColor;
+                            break;
+                    }
+                }
             }
 
             // Merge decision overlay

@@ -114,49 +114,74 @@ namespace ExcelMerge
     public static class ThreeWayDiff
     {
         /// <summary>
-        /// Computes 3-way diff. All three sheets must have the same structure (same row/column count).
-        /// For real usage, the sheets should be pre-aligned using the existing 2-way diff alignment.
-        /// This simplified version compares cell values at matching positions.
+        /// Computes 3-way diff using LCS-based 2-way alignment.
+        /// Runs ExcelSheet.Diff(base, mine) and ExcelSheet.Diff(base, theirs) to get
+        /// proper row alignment, then walks the aligned results to determine per-cell
+        /// 3-way merge status.
+        ///
+        /// Note: ExcelSheet.Diff() mutates its input sheets (column shifting for alignment).
+        /// The base sheet is shared between both diffs, and the mine/theirs sheets may have
+        /// already been mutated by a prior 2-way diff. To avoid corruption, all three sheets
+        /// are deep-copied before each diff call.
         /// </summary>
-        public static ThreeWayDiffResult Compute(ExcelSheet baseSheet, ExcelSheet mineSheet, ExcelSheet theirsSheet)
+        public static ThreeWayDiffResult Compute(ExcelSheet baseSheet, ExcelSheet mineSheet, ExcelSheet theirsSheet, ExcelSheetDiffConfig config = null)
         {
+            var cfg = config ?? new ExcelSheetDiffConfig();
+
+            // Deep-copy all sheets before each diff call since ExcelSheet.Diff() mutates inputs
+            var baseCopyForMine = DeepCopySheet(baseSheet);
+            var mineCopy = DeepCopySheet(mineSheet);
+            var baseMineAligned = ExcelSheet.Diff(baseCopyForMine, mineCopy, cfg);
+
+            var baseCopyForTheirs = DeepCopySheet(baseSheet);
+            var theirsCopy = DeepCopySheet(theirsSheet);
+            var baseTheirsAligned = ExcelSheet.Diff(baseCopyForTheirs, theirsCopy, cfg);
+
+            // Walk aligned rows and compare cells
             var result = new ThreeWayDiffResult();
 
-            // Get all row indices from all three sheets
             var allRowIndices = new SortedSet<int>();
-            foreach (var key in baseSheet.Rows.Keys) allRowIndices.Add(key);
-            foreach (var key in mineSheet.Rows.Keys) allRowIndices.Add(key);
-            foreach (var key in theirsSheet.Rows.Keys) allRowIndices.Add(key);
+            foreach (var key in baseMineAligned.Rows.Keys) allRowIndices.Add(key);
+            foreach (var key in baseTheirsAligned.Rows.Keys) allRowIndices.Add(key);
 
             foreach (var rowIdx in allRowIndices)
             {
-                var baseRow = baseSheet.Rows.ContainsKey(rowIdx) ? baseSheet.Rows[rowIdx] : null;
-                var mineRow = mineSheet.Rows.ContainsKey(rowIdx) ? mineSheet.Rows[rowIdx] : null;
-                var theirsRow = theirsSheet.Rows.ContainsKey(rowIdx) ? theirsSheet.Rows[rowIdx] : null;
+                baseMineAligned.Rows.TryGetValue(rowIdx, out var mineRowDiff);
+                baseTheirsAligned.Rows.TryGetValue(rowIdx, out var theirsRowDiff);
 
                 var maxCols = Math.Max(
-                    Math.Max(baseRow?.Cells.Count ?? 0, mineRow?.Cells.Count ?? 0),
-                    theirsRow?.Cells.Count ?? 0);
+                    mineRowDiff?.Cells.Count ?? 0,
+                    theirsRowDiff?.Cells.Count ?? 0);
 
                 for (int col = 0; col < maxCols; col++)
                 {
-                    var baseVal = GetCellValue(baseRow, col);
-                    var mineVal = GetCellValue(mineRow, col);
-                    var theirsVal = GetCellValue(theirsRow, col);
+                    ExcelCellDiff mineCellDiff = null;
+                    ExcelCellDiff theirsCellDiff = null;
+                    mineRowDiff?.Cells.TryGetValue(col, out mineCellDiff);
+                    theirsRowDiff?.Cells.TryGetValue(col, out theirsCellDiff);
 
-                    var cellResult = new CellMergeResult(rowIdx, col, baseVal, mineVal, theirsVal);
-                    result.AddCell(cellResult);
+                    // Base value comes from SrcCell of either diff (both share the same base)
+                    var baseVal = mineCellDiff?.SrcCell?.Value ?? theirsCellDiff?.SrcCell?.Value ?? string.Empty;
+                    var mineVal = mineCellDiff?.DstCell?.Value ?? baseVal;
+                    var theirsVal = theirsCellDiff?.DstCell?.Value ?? baseVal;
+
+                    result.AddCell(new CellMergeResult(rowIdx, col, baseVal, mineVal, theirsVal));
                 }
             }
 
             return result;
         }
 
-        private static string GetCellValue(ExcelRow row, int col)
+        private static ExcelSheet DeepCopySheet(ExcelSheet sheet)
         {
-            if (row == null || col >= row.Cells.Count)
-                return string.Empty;
-            return row.Cells[col].Value;
+            var copy = new ExcelSheet();
+            foreach (var kvp in sheet.Rows)
+            {
+                var copiedCells = kvp.Value.Cells.Select(c =>
+                    new ExcelCell(c.Value, c.OriginalColumnIndex, c.OriginalRowIndex, c.Formula, c.Comment));
+                copy.Rows.Add(kvp.Key, new ExcelRow(kvp.Value.Index, copiedCells));
+            }
+            return copy;
         }
     }
 }
