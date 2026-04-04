@@ -1513,12 +1513,27 @@ namespace ExcelMerge.GUI.Views
         private string _mergeBasePath;
         private string _mergeOutputPath;
         public bool IsMergeMode { get; private set; }
+        public bool IsReadonlyLeft { get; private set; }
 
         public void SetMergeMode(string basePath, string outputPath)
         {
             IsMergeMode = true;
             _mergeBasePath = basePath;
             _mergeOutputPath = outputPath;
+        }
+
+        public void SetReadonlyLeft()
+        {
+            IsReadonlyLeft = true;
+            ApplyReadonlyLeft();
+        }
+
+        private void ApplyReadonlyLeft()
+        {
+            // When left side is read-only (SVN base file), hide Save Merge in diff mode
+            // In merge mode, Save writes to --output path, so it stays visible
+            if (!IsMergeMode)
+                SaveMergeButton.Visibility = Visibility.Collapsed;
         }
 
         #region BASE Panel

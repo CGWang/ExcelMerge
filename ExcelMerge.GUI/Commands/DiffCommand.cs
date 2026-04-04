@@ -38,6 +38,11 @@ namespace ExcelMerge.GUI.Commands
                 window.Title = $"ExcelMerge - {baseName} \u2194 {mineName}";
             }
 
+            if (Option.ReadonlyLeft)
+            {
+                diffView.SetReadonlyLeft();
+            }
+
             if (Option.QuitOnClose)
             {
                 window.Closed += (sender, args) => Application.Current.Shutdown();
