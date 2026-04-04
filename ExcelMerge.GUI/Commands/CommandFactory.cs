@@ -14,5 +14,10 @@
 
             throw new Exceptions.ExcelMergeException(true, $"{option.MainCommand} is unkown command");
         }
+
+        public static ICommand Create(MergeCommandLineOption option)
+        {
+            return new MergeCommand(option);
+        }
     }
 }

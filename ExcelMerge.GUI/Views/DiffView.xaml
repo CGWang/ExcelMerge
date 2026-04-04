@@ -19,11 +19,13 @@
   <Grid>
 
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="5*"/>
-      <ColumnDefinition Width="45*"/>
-      <ColumnDefinition Width="Auto"/>
-      <ColumnDefinition Width="45*"/>
-      <ColumnDefinition Width="5*"/>
+      <ColumnDefinition Width="5*"/>                                          <!-- Col 0: SrcMap -->
+      <ColumnDefinition Width="45*"/>                                         <!-- Col 1: SrcGrid (THEIRS) -->
+      <ColumnDefinition Width="Auto"/>                                        <!-- Col 2: Splitter -->
+      <ColumnDefinition x:Name="BaseColumnDef" Width="0"/>                    <!-- Col 3: BaseGrid (hidden by default) -->
+      <ColumnDefinition x:Name="BaseSplitterColumnDef" Width="0"/>            <!-- Col 4: Splitter2 (hidden by default) -->
+      <ColumnDefinition Width="45*"/>                                         <!-- Col 5: DstGrid (MINE) -->
+      <ColumnDefinition Width="5*"/>                                          <!-- Col 6: DstMap -->
     </Grid.ColumnDefinitions>
 
     <Grid.RowDefinitions>
@@ -33,7 +35,7 @@
     </Grid.RowDefinitions>
 
     <!-- ============ Toolbar Background ============ -->
-    <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="5"
+    <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Grid.ColumnSpan="7"
             Background="{StaticResource ToolbarBgBrush}"/>
 
     <!-- ============ File Paths Row (aligned to grid columns) ============ -->
@@ -94,8 +96,8 @@
       </Grid>
     </Button>
 
-    <!--Dst file path: Column 3, aligned with DstDataGrid-->
-    <Grid Grid.Row="1" Grid.Column="3" Margin="1,3,1,6">
+    <!--Dst file path: Column 5, aligned with DstDataGrid-->
+    <Grid Grid.Row="1" Grid.Column="5" Margin="1,3,1,6">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto"/>
         <ColumnDefinition Width="*"/>
@@ -136,7 +138,7 @@
     </Grid>
 
     <!-- ============ Toolbar Row ============ -->
-    <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="5"
+    <Border Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="7"
             BorderBrush="{StaticResource BorderLightBrush}" BorderThickness="0,0,0,1" Padding="4,0">
       <StackPanel Orientation="Horizontal">
 
@@ -169,6 +171,16 @@
               <TextBlock DockPanel.Dock="Bottom" Text="Merge" HorizontalAlignment="Center"
                          FontSize="10" Foreground="{StaticResource TextMutedBrush}" Margin="0,2,0,2"/>
               <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,2,0,0">
+                <CheckBox x:Name="ShowBaseToggle"
+                          Margin="4,2"
+                          VerticalAlignment="Center"
+                          Content="BASE"
+                          Checked="ShowBaseToggle_Checked"
+                          Unchecked="ShowBaseToggle_Unchecked"
+                          ToolTip="Show/Hide BASE panel (3-way merge)"
+                          IsEnabled="False"/>
+                <TextBlock x:Name="ConflictCountLabel" VerticalAlignment="Center" Margin="6,0,4,0"
+                           FontSize="11" Foreground="#DC2626" Visibility="Collapsed"/>
                 <Button x:Name="SaveMergeButton"
                         Click="SaveMergeButton_Click"
                         Padding="10,4">
@@ -382,7 +394,7 @@
 
     <!--Search Overlay Panel (Ctrl+F quick search)-->
     <Border x:Name="SearchOverlayPanel"
-            Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3"
+            Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="5"
             VerticalAlignment="Top" HorizontalAlignment="Right"
             Margin="0,4,20,0"
             Visibility="Collapsed"
@@ -436,7 +448,7 @@
             SizeChanged="LocationGrid_SizeChanged"/>
 
     <!--Dst Location Grid-->
-    <Border BorderBrush="LightGray" BorderThickness="1" Grid.Column="4" Grid.Row="2" Margin="5,1,5,1">
+    <Border BorderBrush="LightGray" BorderThickness="1" Grid.Column="6" Grid.Row="2" Margin="5,1,5,1">
       <Grid x:Name="DstLocationGrid" ShowGridLines="False"
             MouseDown="LocationGrid_MouseDown" MouseMove="LocationGrid_MouseMove" MouseWheel="LocationGrid_MouseWheel"
             Background="#00000000">
@@ -495,8 +507,27 @@
 
     <GridSplitter Grid.Column="2" Grid.Row="2" Width="5" HorizontalAlignment="Center"/>
 
+    <!-- BASE Grid (merge mode only, initially hidden) -->
+    <fg:FastGridControl x:Name="BaseDataGrid" Grid.Column="3" Grid.Row="2" Margin="1, 45, 1, 1"
+                        IsTransposed="{Binding IsChecked, ElementName=chbIsTransposed1, Mode=TwoWay}"
+                        UseClearType="{Binding IsChecked, ElementName=chbClearType1}"
+                        IsReadOnly="True"
+                        SizeChanged="DataGrid_SizeChanged"
+                        RowHeightReserve="0"
+                        Visibility="Collapsed"
+                        />
+
+    <RichTextBox x:Name="BaseValueTextBox" Grid.Column="3" Grid.Row="2" Height="30" Margin="1" VerticalAlignment="Top"
+                 Visibility="Collapsed"
+                 VerticalScrollBarVisibility="Auto"
+                 HorizontalScrollBarVisibility="Auto"
+                 />
+
+    <GridSplitter x:Name="BaseSplitter" Grid.Column="4" Grid.Row="2" Width="5" HorizontalAlignment="Center"
+                  Visibility="Collapsed"/>
+
     <!--Dst Grid-->
-    <fg:FastGridControl x:Name="DstDataGrid" Grid.Column="3" Grid.Row="2" Margin="1, 45, 1, 1" 
+    <fg:FastGridControl x:Name="DstDataGrid" Grid.Column="5" Grid.Row="2" Margin="1, 45, 1, 1"
                         IsTransposed="{Binding IsChecked, ElementName=chbIsTransposed1, Mode=TwoWay}"
                         UseClearType="{Binding IsChecked, ElementName=chbClearType1}"
                         IsReadOnly="True"
@@ -531,7 +562,7 @@
 
     </fg:FastGridControl>
 
-    <RichTextBox x:Name="DstValueTextBox" Grid.Column="3" Grid.Row="2" Height="30" Margin="1" VerticalAlignment="Top"
+    <RichTextBox x:Name="DstValueTextBox" Grid.Column="5" Grid.Row="2" Height="30" Margin="1" VerticalAlignment="Top"
                  GotFocus="ValueTextBox_GotFocus"
                  LostFocus="ValueTextBox_LostFocus"
                  Focusable="True"

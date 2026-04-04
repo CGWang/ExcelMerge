@@ -88,6 +88,18 @@ namespace ExcelMerge.GUI.Views
             RefreshDiffView();
         }
 
+        private void ShowBasePanelMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var vm = DataContext as ExcelMerge.GUI.ViewModels.MainWindowViewModel;
+            if (vm?.Content is DiffView diffView)
+            {
+                if (ShowBasePanelMenuItem.IsChecked)
+                    diffView.ShowBasePanel();
+                else
+                    diffView.HideBasePanel();
+            }
+        }
+
         private void RefreshDiffView()
         {
             var vm = DataContext as ExcelMerge.GUI.ViewModels.MainWindowViewModel;

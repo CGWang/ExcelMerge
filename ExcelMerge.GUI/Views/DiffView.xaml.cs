@@ -26,6 +26,8 @@ namespace ExcelMerge.GUI.Views
 
         private FastGridControl copyTargetGrid;
         private MergeResult mergeResult;
+        private ThreeWayDiffResult _threeWayResult;
+        private const string baseKey = "base";
 
         public DiffView()
         {
@@ -49,27 +51,32 @@ namespace ExcelMerge.GUI.Views
             container
                 .RegisterInstance(srcKey, SrcDataGrid)
                 .RegisterInstance(dstKey, DstDataGrid)
+                .RegisterInstance(baseKey, BaseDataGrid)
                 .RegisterInstance(srcKey, SrcLocationGrid)
                 .RegisterInstance(dstKey, DstLocationGrid)
                 .RegisterInstance(srcKey, SrcViewRectangle)
                 .RegisterInstance(dstKey, DstViewRectangle)
                 .RegisterInstance(srcKey, SrcValueTextBox)
-                .RegisterInstance(dstKey, DstValueTextBox);
+                .RegisterInstance(dstKey, DstValueTextBox)
+                .RegisterInstance(baseKey, BaseValueTextBox);
         }
 
         private void InitializeEventListeners()
         {
             var srcEventHandler = new DiffViewEventHandler(srcKey);
             var dstEventHandler = new DiffViewEventHandler(dstKey);
+            var baseEventHandler = new DiffViewEventHandler(baseKey);
 
             DataGridEventDispatcher.Instance.Listeners.Add(srcEventHandler);
             DataGridEventDispatcher.Instance.Listeners.Add(dstEventHandler);
+            DataGridEventDispatcher.Instance.Listeners.Add(baseEventHandler);
             LocationGridEventDispatcher.Instance.Listeners.Add(srcEventHandler);
             LocationGridEventDispatcher.Instance.Listeners.Add(dstEventHandler);
             ViewportEventDispatcher.Instance.Listeners.Add(srcEventHandler);
             ViewportEventDispatcher.Instance.Listeners.Add(dstEventHandler);
             ValueTextBoxEventDispatcher.Instance.Listeners.Add(srcEventHandler);
             ValueTextBoxEventDispatcher.Instance.Listeners.Add(dstEventHandler);
+            ValueTextBoxEventDispatcher.Instance.Listeners.Add(baseEventHandler);
         }
 
         private void OnApplicationSettingUpdated()
@@ -429,6 +436,54 @@ namespace ExcelMerge.GUI.Views
             var dstModel = new DiffGridModel(diff, DiffType.Dest) { MergeResult = mergeResult, CompareFormula = compareFormula };
             SrcDataGrid.Model = srcModel;
             DstDataGrid.Model = dstModel;
+
+            // 3-way merge mode: load BASE workbook and compute three-way diff
+            if (IsMergeMode && !string.IsNullOrEmpty(_mergeBasePath) && File.Exists(_mergeBasePath))
+            {
+                try
+                {
+                    var baseWb = ExcelWorkbook.Create(_mergeBasePath, CreateReadConfig());
+                    var baseSheetName = baseWb.Sheets.Keys.ElementAtOrDefault(
+                        Math.Min(Math.Max(diffConfig.SrcSheetIndex, 0), baseWb.Sheets.Count - 1));
+
+                    if (baseSheetName != null)
+                    {
+                        var baseSheet = baseWb.Sheets[baseSheetName];
+
+                        // Compute 3-way diff: srcSheet=THEIRS(left), dstSheet=MINE(right)
+                        _threeWayResult = ThreeWayDiff.Compute(baseSheet, dstSheet, srcSheet);
+
+                        // Create BASE grid model by diffing base against itself (no differences shown)
+                        var baseDiff = ExcelSheet.Diff(baseSheet, baseSheet, diffConfig);
+                        var baseModel = new DiffGridModel(baseDiff, DiffType.Source) { CompareFormula = compareFormula };
+                        BaseDataGrid.Model = baseModel;
+
+                        // Enable the Show BASE toggle
+                        ShowBaseToggle.IsEnabled = true;
+
+                        // Auto-show BASE panel if conflicts exist
+                        if (_threeWayResult.HasConflicts)
+                        {
+                            ShowBaseToggle.IsChecked = true;
+                            ShowBasePanel();
+                        }
+
+                        UpdateMergeStatus();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Failed to load BASE file: {ex.Message}");
+                }
+            }
+            else
+            {
+                _threeWayResult = null;
+                ShowBaseToggle.IsEnabled = false;
+                ShowBaseToggle.IsChecked = false;
+                HideBasePanel();
+                ConflictCountLabel.Visibility = Visibility.Collapsed;
+            }
 
             args = new DiffViewEventArgs<FastGridControl>(SrcDataGrid, container);
             DataGridEventDispatcher.Instance.DispatchFileSettingUpdateEvent(args, srcFileSetting);
@@ -1383,6 +1438,55 @@ namespace ExcelMerge.GUI.Views
 
         private void SaveMergeButton_Click(object sender, RoutedEventArgs e)
         {
+            // 3-way merge mode: use MergeWriter with ThreeWayDiffResult
+            if (IsMergeMode && _threeWayResult != null)
+            {
+                if (_threeWayResult.UnresolvedConflictCount > 0)
+                {
+                    var result = MessageBox.Show(
+                        $"{_threeWayResult.UnresolvedConflictCount} unresolved conflicts.\nSave anyway (MINE values will be used for unresolved)?",
+                        "Unresolved Conflicts", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (result != MessageBoxResult.Yes)
+                        return;
+
+                    // Fill unresolved conflicts with MINE values
+                    foreach (var row in _threeWayResult.Rows.Values)
+                        foreach (var cell in row.Values)
+                            if (cell.Status == CellMergeStatus.Conflict && cell.ResolvedValue == null)
+                                cell.ResolvedValue = cell.MineValue;
+                }
+
+                var outputPath = _mergeOutputPath;
+                if (string.IsNullOrEmpty(outputPath))
+                {
+                    var dlg = new Microsoft.Win32.SaveFileDialog
+                    {
+                        Filter = "Excel Files|*.xlsx",
+                        DefaultExt = ".xlsx",
+                        FileName = "merged.xlsx"
+                    };
+                    if (dlg.ShowDialog() != true)
+                        return;
+                    outputPath = dlg.FileName;
+                }
+
+                try
+                {
+                    // Find current sheet name for MergeWriter
+                    var sheetName = SrcSheetCombobox.SelectedItem?.ToString() ?? "Sheet1";
+                    MergeWriter.Write(_mergeBasePath, outputPath, _threeWayResult, sheetName);
+                    MessageBox.Show(string.Format(Properties.Resources.Msg_MergeSaved, outputPath),
+                        "ExcelMerge", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Failed to save merge: {ex.Message}",
+                        "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+                return;
+            }
+
+            // 2-way merge mode: use existing MergeResult
             if (mergeResult == null || mergeResult.DecisionCount == 0)
             {
                 MessageBox.Show(Properties.Resources.Msg_NoMergeDecisions, "ExcelMerge",
@@ -1390,19 +1494,101 @@ namespace ExcelMerge.GUI.Views
                 return;
             }
 
-            var dlg = new Microsoft.Win32.SaveFileDialog
+            var saveDlg = new Microsoft.Win32.SaveFileDialog
             {
                 Filter = "Excel Files|*.xlsx",
                 DefaultExt = ".xlsx",
                 FileName = "merged.xlsx"
             };
 
-            if (dlg.ShowDialog() == true)
+            if (saveDlg.ShowDialog() == true)
             {
-                mergeResult.WriteToFile(dlg.FileName);
-                MessageBox.Show(string.Format(Properties.Resources.Msg_MergeSaved, dlg.FileName),
+                mergeResult.WriteToFile(saveDlg.FileName);
+                MessageBox.Show(string.Format(Properties.Resources.Msg_MergeSaved, saveDlg.FileName),
                     "ExcelMerge", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
+
+        // Merge mode properties
+        private string _mergeBasePath;
+        private string _mergeOutputPath;
+        public bool IsMergeMode { get; private set; }
+
+        public void SetMergeMode(string basePath, string outputPath)
+        {
+            IsMergeMode = true;
+            _mergeBasePath = basePath;
+            _mergeOutputPath = outputPath;
+        }
+
+        #region BASE Panel
+
+        public void ShowBasePanel()
+        {
+            BaseColumnDef.Width = new GridLength(30, GridUnitType.Star);
+            BaseSplitterColumnDef.Width = GridLength.Auto;
+            BaseDataGrid.Visibility = Visibility.Visible;
+            BaseValueTextBox.Visibility = Visibility.Visible;
+            BaseSplitter.Visibility = Visibility.Visible;
+        }
+
+        public void HideBasePanel()
+        {
+            BaseColumnDef.Width = new GridLength(0);
+            BaseSplitterColumnDef.Width = new GridLength(0);
+            BaseDataGrid.Visibility = Visibility.Collapsed;
+            BaseValueTextBox.Visibility = Visibility.Collapsed;
+            BaseSplitter.Visibility = Visibility.Collapsed;
+        }
+
+        private void ShowBaseToggle_Checked(object sender, RoutedEventArgs e)
+        {
+            ShowBasePanel();
+        }
+
+        private void ShowBaseToggle_Unchecked(object sender, RoutedEventArgs e)
+        {
+            HideBasePanel();
+        }
+
+        private void UpdateMergeStatus()
+        {
+            if (_threeWayResult == null)
+            {
+                ConflictCountLabel.Visibility = Visibility.Collapsed;
+                return;
+            }
+
+            var conflicts = _threeWayResult.UnresolvedConflictCount;
+            if (conflicts > 0)
+            {
+                ConflictCountLabel.Text = $"Conflicts: {conflicts}";
+                ConflictCountLabel.Visibility = Visibility.Visible;
+
+                var window = Window.GetWindow(this);
+                if (window != null)
+                    window.Title = $"ExcelMerge - Merge ({conflicts} conflicts)";
+            }
+            else
+            {
+                var autoMerged = _threeWayResult.AutoMergedCount;
+                if (autoMerged > 0)
+                {
+                    ConflictCountLabel.Text = $"Auto-merged: {autoMerged}";
+                    ConflictCountLabel.Foreground = new SolidColorBrush(Color.FromRgb(0x16, 0xA3, 0x4A));
+                    ConflictCountLabel.Visibility = Visibility.Visible;
+                }
+                else
+                {
+                    ConflictCountLabel.Visibility = Visibility.Collapsed;
+                }
+
+                var window = Window.GetWindow(this);
+                if (window != null)
+                    window.Title = "ExcelMerge - Merge (no conflicts)";
+            }
+        }
+
+        #endregion
     }
 }
