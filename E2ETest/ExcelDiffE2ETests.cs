@@ -305,4 +305,192 @@ public class ExcelDiffE2ETests
         Assert.IsNotNull(wb);
         Assert.AreEqual(1, wb.Sheets.Count);
     }
+
+    // ── Test 11: Character-level diff — TextDiffUtil ──
+    [TestMethod]
+    public void TextDiffUtil_CharLevelDiff()
+    {
+        // Simple modification
+        var srcSegs = TextDiffUtil.ComputeInlineDiffSrc("Hello World", "Hello Earth");
+        var dstSegs = TextDiffUtil.ComputeInlineDiff("Hello World", "Hello Earth");
+
+        // Src segments should reconstruct "Hello World"
+        var srcText = string.Concat(srcSegs.Select(s => s.Text));
+        Assert.AreEqual("Hello World", srcText, "Src reconstruction");
+
+        // Dst segments should reconstruct "Hello Earth"
+        var dstText = string.Concat(dstSegs.Select(s => s.Text));
+        Assert.AreEqual("Hello Earth", dstText, "Dst reconstruction");
+
+        // Should have both modified and unmodified segments
+        Assert.IsTrue(srcSegs.Any(s => s.IsModified), "Src has modified segments");
+        Assert.IsTrue(srcSegs.Any(s => !s.IsModified), "Src has unmodified segments");
+        Assert.IsTrue(dstSegs.Any(s => s.IsModified), "Dst has modified segments");
+        Assert.IsTrue(dstSegs.Any(s => !s.IsModified), "Dst has unmodified segments");
+    }
+
+    // ── Test 12: Character-level diff — identical strings ──
+    [TestMethod]
+    public void TextDiffUtil_IdenticalStrings()
+    {
+        var segs = TextDiffUtil.ComputeInlineDiff("same", "same");
+        Assert.AreEqual(1, segs.Count, "One segment");
+        Assert.AreEqual("same", segs[0].Text);
+        Assert.IsFalse(segs[0].IsModified, "Not modified");
+    }
+
+    // ── Test 13: Character-level diff — empty strings ──
+    [TestMethod]
+    public void TextDiffUtil_EmptyStrings()
+    {
+        var segs = TextDiffUtil.ComputeInlineDiff("", "");
+        Assert.AreEqual(0, segs.Count, "No segments for empty strings");
+
+        var segs2 = TextDiffUtil.ComputeInlineDiff("abc", "");
+        // Src side: all chars are deleted, dst side has nothing
+        Assert.AreEqual(0, segs2.Count, "Dst side empty when all deleted");
+
+        var srcSegs = TextDiffUtil.ComputeInlineDiffSrc("", "abc");
+        Assert.AreEqual(0, srcSegs.Count, "Src side empty when all inserted");
+    }
+
+    // ── Test 14: Cell comment extraction ──
+    [TestMethod]
+    public void CellComment_IsExtracted()
+    {
+        var path = TestPath("comment.xlsx");
+        var wb = new XSSFWorkbook();
+        var sheet = wb.CreateSheet("Sheet1");
+
+        // Create cell with comment
+        var row = sheet.CreateRow(0);
+        var cell = row.CreateCell(0);
+        cell.SetCellValue("value1");
+
+        var drawing = sheet.CreateDrawingPatriarch();
+        var anchor = drawing.CreateAnchor(0, 0, 0, 0, 0, 0, 2, 1);
+        var comment = drawing.CreateCellComment(anchor);
+        comment.String = new NPOI.XSSF.UserModel.XSSFRichTextString("This is a comment");
+        cell.CellComment = comment;
+
+        // Create cell without comment
+        var cell2 = row.CreateCell(1);
+        cell2.SetCellValue("value2");
+
+        using (var fs = new FileStream(path, FileMode.Create))
+            wb.Write(fs);
+
+        var readWb = ExcelWorkbook.Create(path, new ExcelSheetReadConfig());
+        var readRow = readWb.Sheets["Sheet1"].Rows.Values.First();
+
+        Assert.AreEqual("This is a comment", readRow.Cells[0].Comment, "Comment extracted");
+        Assert.AreEqual(string.Empty, readRow.Cells[1].Comment, "No comment = empty string");
+    }
+
+    // ── Test 15: Comment diff detection ──
+    [TestMethod]
+    public void CommentDiff_Detected()
+    {
+        var src = TestPath("comment_src.xlsx");
+        var dst = TestPath("comment_dst.xlsx");
+
+        // Src: cell with comment "old note"
+        CreateExcelWithComment(src, "value", "old note");
+        // Dst: same cell value but comment "new note"
+        CreateExcelWithComment(dst, "value", "new note");
+
+        var config = new ExcelSheetReadConfig();
+        var srcWb = ExcelWorkbook.Create(src, config);
+        var dstWb = ExcelWorkbook.Create(dst, config);
+        var diff = ExcelSheet.Diff(srcWb.Sheets["Sheet1"], dstWb.Sheets["Sheet1"], new ExcelSheetDiffConfig());
+        var summary = diff.CreateSummary();
+
+        // Cell value is the same, but comment differs — should be detected
+        Assert.IsTrue(summary.HasDiff, "Comment-only diff detected");
+        Assert.IsTrue(summary.CommentDiffCount > 0, $"CommentDiffCount > 0 (got {summary.CommentDiffCount})");
+    }
+
+    // ── Test 16: Ignore whitespace ──
+    [TestMethod]
+    public void IgnoreWhitespace_TrimmedComparison()
+    {
+        var src = TestPath("ws_src.xlsx");
+        var dst = TestPath("ws_dst.xlsx");
+        CreateExcel(src, s =>
+        {
+            SetCell(s, 0, 0, "  Alice  ");
+            SetCell(s, 0, 1, "100");
+        });
+        CreateExcel(dst, s =>
+        {
+            SetCell(s, 0, 0, "Alice");
+            SetCell(s, 0, 1, "100");
+        });
+
+        // Without ignore whitespace: should detect diff
+        var summaryExact = DiffFiles(src, dst);
+        Assert.IsTrue(summaryExact.HasDiff, "Exact mode detects whitespace diff");
+
+        // With ignore whitespace: should be equal
+        var config = new ExcelSheetReadConfig();
+        var srcWb = ExcelWorkbook.Create(src, config);
+        var dstWb = ExcelWorkbook.Create(dst, config);
+        var diff = ExcelSheet.Diff(srcWb.Sheets["Sheet1"], dstWb.Sheets["Sheet1"],
+            new ExcelSheetDiffConfig { IgnoreWhitespace = true });
+        var summaryTrim = diff.CreateSummary();
+        Assert.IsFalse(summaryTrim.HasDiff, "Trim mode ignores whitespace diff");
+    }
+
+    // ── Test 17: Numeric precision tolerance ──
+    [TestMethod]
+    public void NumericPrecision_ToleranceComparison()
+    {
+        var src = TestPath("prec_src.xlsx");
+        var dst = TestPath("prec_dst.xlsx");
+        CreateExcel(src, s =>
+        {
+            SetCell(s, 0, 0, "3.14159");
+            SetCell(s, 0, 1, "100");
+        });
+        CreateExcel(dst, s =>
+        {
+            SetCell(s, 0, 0, "3.14");
+            SetCell(s, 0, 1, "100");
+        });
+
+        // Without tolerance: should detect diff
+        var summaryExact = DiffFiles(src, dst);
+        Assert.IsTrue(summaryExact.HasDiff, "Exact mode detects numeric diff");
+
+        // With tolerance 0.01: should be equal
+        var config = new ExcelSheetReadConfig();
+        var srcWb = ExcelWorkbook.Create(src, config);
+        var dstWb = ExcelWorkbook.Create(dst, config);
+        var diff = ExcelSheet.Diff(srcWb.Sheets["Sheet1"], dstWb.Sheets["Sheet1"],
+            new ExcelSheetDiffConfig { NumericPrecision = 0.01 });
+        var summaryTol = diff.CreateSummary();
+        Assert.IsFalse(summaryTol.HasDiff, "Tolerance 0.01 ignores small numeric diff");
+    }
+
+    #region Comment helpers
+
+    private void CreateExcelWithComment(string path, string cellValue, string commentText)
+    {
+        var wb = new XSSFWorkbook();
+        var sheet = wb.CreateSheet("Sheet1");
+        var row = sheet.CreateRow(0);
+        var cell = row.CreateCell(0);
+        cell.SetCellValue(cellValue);
+
+        var drawing = sheet.CreateDrawingPatriarch();
+        var anchor = drawing.CreateAnchor(0, 0, 0, 0, 0, 0, 2, 1);
+        var comment = drawing.CreateCellComment(anchor);
+        comment.String = new NPOI.XSSF.UserModel.XSSFRichTextString(commentText);
+        cell.CellComment = comment;
+
+        using var fs = new FileStream(path, FileMode.Create);
+        wb.Write(fs);
+    }
+
+    #endregion
 }
