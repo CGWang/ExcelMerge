@@ -759,129 +759,59 @@ namespace ExcelMerge.GUI.Views
 
         private void MoveNextModifiedCell()
         {
-            if (!ValidateDataGrids())
-                return;
-
-            var nextCell = (SrcDataGrid.Model as DiffGridModel).GetNextModifiedCell(
-                SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell);
-            if (nextCell.IsEmpty)
-                return;
-
-            SrcDataGrid.CurrentCell = nextCell;
+            if (!ValidateDataGrids()) return;
+            DiffNavigator.Navigate(SrcDataGrid, (m, c) => m.GetNextModifiedCell(c));
         }
 
-        private void PrevModifiedCellButton_Click(object sender, RoutedEventArgs e)
-        {
-            MovePrevModifiedCell();
-        }
+        private void PrevModifiedCellButton_Click(object sender, RoutedEventArgs e) => MovePrevModifiedCell();
 
         private void MovePrevModifiedCell()
         {
-            if (!ValidateDataGrids())
-                return;
-
-            var nextCell = (SrcDataGrid.Model as DiffGridModel).GetPreviousModifiedCell(
-                SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell);
-            if (nextCell.IsEmpty)
-                return;
-
-            SrcDataGrid.CurrentCell = nextCell;
+            if (!ValidateDataGrids()) return;
+            DiffNavigator.Navigate(SrcDataGrid, (m, c) => m.GetPreviousModifiedCell(c));
         }
 
-        private void NextModifiedRowButton_Click(object sender, RoutedEventArgs e)
-        {
-            MoveNextModifiedRow();
-        }
+        private void NextModifiedRowButton_Click(object sender, RoutedEventArgs e) => MoveNextModifiedRow();
 
         private void MoveNextModifiedRow()
         {
-            if (!ValidateDataGrids())
-                return;
-
-            var nextCell = (SrcDataGrid.Model as DiffGridModel).GetNextModifiedRow(
-                SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell);
-            if (nextCell.IsEmpty)
-                return;
-
-            SrcDataGrid.CurrentCell = nextCell;
+            if (!ValidateDataGrids()) return;
+            DiffNavigator.Navigate(SrcDataGrid, (m, c) => m.GetNextModifiedRow(c));
         }
 
-        private void PrevModifiedRowButton_Click(object sender, RoutedEventArgs e)
-        {
-            MovePrevModifiedRow();
-        }
+        private void PrevModifiedRowButton_Click(object sender, RoutedEventArgs e) => MovePrevModifiedRow();
 
         private void MovePrevModifiedRow()
         {
-            if (!ValidateDataGrids())
-                return;
-
-            var nextCell = (SrcDataGrid.Model as DiffGridModel).GetPreviousModifiedRow(
-                SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell);
-            if (nextCell.IsEmpty)
-                return;
-
-            SrcDataGrid.CurrentCell = nextCell;
+            if (!ValidateDataGrids()) return;
+            DiffNavigator.Navigate(SrcDataGrid, (m, c) => m.GetPreviousModifiedRow(c));
         }
 
-        private void NextAddedRowButton_Click(object sender, RoutedEventArgs e)
-        {
-            MoveNextAddedRow();
-        }
+        private void NextAddedRowButton_Click(object sender, RoutedEventArgs e) => MoveNextAddedRow();
 
         private void MoveNextAddedRow()
         {
-            if (!ValidateDataGrids())
-                return;
-
-            var nextCell = (SrcDataGrid.Model as DiffGridModel).GetNextAddedRow(
-                SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell);
-            if (nextCell.IsEmpty)
-                return;
-
-            SrcDataGrid.CurrentCell = nextCell;
+            if (!ValidateDataGrids()) return;
+            DiffNavigator.Navigate(SrcDataGrid, (m, c) => m.GetNextAddedRow(c));
         }
 
-        private void PrevAddedRowButton_Click(object sender, RoutedEventArgs e)
-        {
-            MovePrevAddedRow();
-        }
+        private void PrevAddedRowButton_Click(object sender, RoutedEventArgs e) => MovePrevAddedRow();
 
         private void MovePrevAddedRow()
         {
-            if (!ValidateDataGrids())
-                return;
-
-            var nextCell = (SrcDataGrid.Model as DiffGridModel).GetPreviousAddedRow(
-                SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell);
-            if (nextCell.IsEmpty)
-                return;
-
-            SrcDataGrid.CurrentCell = nextCell;
+            if (!ValidateDataGrids()) return;
+            DiffNavigator.Navigate(SrcDataGrid, (m, c) => m.GetPreviousAddedRow(c));
         }
 
-        private void NextRemovedRowButton_Click(object sender, RoutedEventArgs e)
-        {
-            MoveNextRemovedRow();
-        }
+        private void NextRemovedRowButton_Click(object sender, RoutedEventArgs e) => MoveNextRemovedRow();
 
         private void MoveNextRemovedRow()
         {
-            if (!ValidateDataGrids())
-                return;
-
-            var nextCell = (SrcDataGrid.Model as DiffGridModel).GetNextRemovedRow(
-                SrcDataGrid.CurrentCell.IsEmpty ? FastGridCellAddress.Zero : SrcDataGrid.CurrentCell);
-            if (nextCell.IsEmpty)
-                return;
-
-            SrcDataGrid.CurrentCell = nextCell;
+            if (!ValidateDataGrids()) return;
+            DiffNavigator.Navigate(SrcDataGrid, (m, c) => m.GetNextRemovedRow(c));
         }
 
-        private void PrevRemovedRowButton_Click(object sender, RoutedEventArgs e)
-        {
-            MovePrevRemovedRow();
-        }
+        private void PrevRemovedRowButton_Click(object sender, RoutedEventArgs e) => MovePrevRemovedRow();
 
         private void MovePrevRemovedRow()
         {
@@ -1284,23 +1214,8 @@ namespace ExcelMerge.GUI.Views
         private void ApplyMergeToSelectedCells(MergeSide side)
         {
             if (mergeResult == null || copyTargetGrid == null) return;
-
             var model = copyTargetGrid.Model as DiffGridModel;
-            if (model == null) return;
-
-            foreach (var cell in copyTargetGrid.SelectedCells)
-            {
-                if (!cell.IsCell) continue;
-                ExcelCellDiff cellDiff;
-                if (model.TryGetCellDiffPublic(cell.Row.Value, cell.Column.Value, out cellDiff))
-                {
-                    if (side == MergeSide.Src)
-                        mergeResult.AcceptSrc(cellDiff.RowIndex, cellDiff.ColumnIndex);
-                    else
-                        mergeResult.AcceptDst(cellDiff.RowIndex, cellDiff.ColumnIndex);
-                }
-            }
-
+            MergeApplicator.ApplyToSelectedCells(mergeResult, model, copyTargetGrid.SelectedCells, side);
             SrcDataGrid.InvalidateAll();
             DstDataGrid.InvalidateAll();
         }
@@ -1308,24 +1223,8 @@ namespace ExcelMerge.GUI.Views
         private void ApplyMergeToSelectedRows(MergeSide side)
         {
             if (mergeResult == null || copyTargetGrid == null) return;
-
             var model = copyTargetGrid.Model as DiffGridModel;
-            if (model == null) return;
-
-            var rows = copyTargetGrid.SelectedCells
-                .Where(c => c.IsCell)
-                .Select(c => c.Row.Value)
-                .Distinct();
-
-            foreach (var row in rows)
-            {
-                var realRow = model.GetRealRowIndex(row);
-                if (side == MergeSide.Src)
-                    mergeResult.AcceptSrcRow(realRow);
-                else
-                    mergeResult.AcceptDstRow(realRow);
-            }
-
+            MergeApplicator.ApplyToSelectedRows(mergeResult, model, copyTargetGrid.SelectedCells, side);
             SrcDataGrid.InvalidateAll();
             DstDataGrid.InvalidateAll();
         }

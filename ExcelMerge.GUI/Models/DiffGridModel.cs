@@ -303,7 +303,12 @@ namespace ExcelMerge.GUI.Models
                     status = ExcelCellStatus.Added;
             }
 
-            cell.backgroundColor = GetColor(status);
+            cell.backgroundColor = null;
+
+            if (App.Instance.Setting.ColorModifiedRow && IsModifiedRow(row, true))
+                cell.backgroundColor = App.Instance.Setting.ModifiedRowColor;
+
+            cell.backgroundColor = GetColor(status) ?? cell.backgroundColor;
             cell.decoration = CellDecoration.None;
             cell.decorationColor = null;
             cell.tooltipVisibility = TooltipVisibilityMode.OnlyWhenTrimmed;
