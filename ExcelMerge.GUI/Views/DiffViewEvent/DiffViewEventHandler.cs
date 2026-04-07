@@ -188,8 +188,11 @@ namespace ExcelMerge.GUI.Views
 
             foreach (var grid in e.Container.ResolveAll<FastGridControl>())
             {
-                (grid.Model as DiffGridModel).SetColumnHeader(row);
-                grid.NotifyRefresh();
+                if (grid.Model is DiffGridModel model)
+                {
+                    model.SetColumnHeader(row);
+                    grid.NotifyRefresh();
+                }
             }
         }
 
@@ -197,8 +200,11 @@ namespace ExcelMerge.GUI.Views
         {
             foreach (var grid in e.Container.ResolveAll<FastGridControl>())
             {
-                (grid.Model as DiffGridModel).SetColumnHeader(0);
-                grid.NotifyRefresh();
+                if (grid.Model is DiffGridModel model)
+                {
+                    model.SetColumnHeader(0);
+                    grid.NotifyRefresh();
+                }
             }
         }
 
@@ -208,8 +214,11 @@ namespace ExcelMerge.GUI.Views
 
             foreach (var grid in e.Container.ResolveAll<FastGridControl>())
             {
-                (grid.Model as DiffGridModel).SetRowHeader(column);
-                grid.NotifyRefresh();
+                if (grid.Model is DiffGridModel model)
+                {
+                    model.SetRowHeader(column);
+                    grid.NotifyRefresh();
+                }
             }
         }
 
@@ -217,8 +226,11 @@ namespace ExcelMerge.GUI.Views
         {
             foreach (var grid in e.Container.ResolveAll<FastGridControl>())
             {
-                (grid.Model as DiffGridModel).SetRowHeader(-1);
-                grid.NotifyRefresh();
+                if (grid.Model is DiffGridModel model)
+                {
+                    model.SetRowHeader(-1);
+                    grid.NotifyRefresh();
+                }
             }
         }
 
@@ -245,7 +257,7 @@ namespace ExcelMerge.GUI.Views
         {
             foreach (var grid in e.Container.ResolveAll<FastGridControl>())
             {
-                if (grid == e.Sender)
+                if (grid == e.Sender || grid.Model == null)
                     continue;
 
                 grid.ResizeColumn(ce.NewWidth, ce.Column);
@@ -256,7 +268,7 @@ namespace ExcelMerge.GUI.Views
         {
             foreach (var grid in e.Container.ResolveAll<FastGridControl>())
             {
-                if (e.Sender == grid)
+                if (e.Sender == grid || grid.Model == null)
                     continue;
 
                 grid.SetHoverRow(he.Cell);
@@ -267,7 +279,7 @@ namespace ExcelMerge.GUI.Views
         {
             foreach (var grid in e.Container.ResolveAll<FastGridControl>())
             {
-                if (e.Sender == grid)
+                if (e.Sender == grid || grid.Model == null)
                     continue;
 
                 grid.CellFontSize = fe.NewSize;
