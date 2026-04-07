@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ExcelMerge is a GUI diff tool for Excel files (.xls, .xlsx, .csv, .tsv), built with C# / WPF. Forked from skanmera/ExcelMerge (MIT License), originally targeting .NET Framework 4.5.2 — upgrading to .NET 8 (LTS) as part of Phase 1 modernization. The goal is secondary development to add SVN (TortoiseSVN) integration, merge capabilities, and improved diff accuracy for a ~150-person Unity game team.
+ExcelMerge is a GUI diff & merge tool for Excel files (.xls, .xlsx, .csv, .tsv), built with C# / WPF / .NET 8. Forked from skanmera/ExcelMerge (MIT License), with extensive secondary development for a ~150-person Unity game team using SVN (TortoiseSVN).
 
 The development plan is documented in `.claude/EXCEL_MERGE_DEV_PLAN.md` (in Chinese).
 
@@ -17,11 +17,34 @@ dotnet build ExcelMerge.sln
 # Build release
 dotnet build ExcelMerge.sln -c Release
 
-# Run diff algorithm tests (NetDiff.Test — 31 MSTest tests)
+# Run all tests (99 total: 31 NetDiff + 68 E2E)
 dotnet test NetDiff/NetDiff.Test/NetDiff.Test.csproj
+dotnet test E2ETest/E2ETest.csproj
 
 # Publish self-contained single-file exe
-dotnet publish ExcelMerge.GUI/ExcelMerge.GUI.csproj -c Release --self-contained -p:PublishSingleFile=true
+dotnet publish ExcelMerge.GUI/ExcelMerge.GUI.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true
+
+# Build installer (requires Inno Setup 6)
+cd installer && build.bat
+```
+
+## CLI Usage
+
+### Diff mode (TortoiseSVN diff)
+```bash
+ExcelMerge.GUI diff -s <source> -d <dest> [options]
+ExcelMerge.GUI diff <source> <dest>                    # positional args
+
+# TortoiseSVN config:
+"path\ExcelMerge.GUI.exe" diff -s %base -d %mine --readonly-left --quit-on-close
+```
+
+### Merge mode (TortoiseSVN 3-way merge)
+```bash
+ExcelMerge.GUI merge --base <base> --mine <mine> --theirs <theirs> --output <merged>
+
+# TortoiseSVN config:
+"path\ExcelMerge.GUI.exe" merge --base %base --mine %mine --theirs %theirs --output %merged
 ```
 
 ## Architecture
@@ -30,63 +53,118 @@ dotnet publish ExcelMerge.GUI/ExcelMerge.GUI.csproj -c Release --self-contained 
 
 | Project | Type | Purpose |
 |---------|------|---------|
-| **ExcelMerge** | Class Library | Core diff engine — file reading, sheet/row/cell models, diff logic |
-| **ExcelMerge.GUI** | WPF Application | Main app — MVVM with Prism, CLI parsing, diff visualization |
-| **FastWpfGrid** | Class Library | Custom high-performance virtualized grid control (core asset, modify with care) |
+| **ExcelMerge** | Class Library | Core diff engine, cell/row/sheet models, comparison logic |
+| **ExcelMerge.GUI** | WPF Application | Main app — CLI parsing, diff/merge visualization, MVVM |
+| **FastWpfGrid** | Class Library | High-performance virtualized grid control (core asset) |
 | **WriteableBitmapEx** | Class Library | Bitmap rendering support for FastWpfGrid |
 | **NetDiff** | Class Library | Generic LCS-based diff algorithm |
-| **NetDiff.Test** | Test Project | Unit tests for the diff algorithm |
-| **ExcelMerge.ShellExtension** | COM DLL | Windows Explorer right-click context menu integration |
-| **ExcelMerge.Installer** | Setup Project | MSI installer (WiX/vdproj) |
+| **NetDiff.Test** | Test Project | 31 unit tests for diff algorithm |
+| **E2ETest** | Test Project | 68 E2E tests covering core engine, services, integration |
+| **ExcelMerge.ShellExtension** | COM DLL | Windows Explorer right-click context menu |
 
-### Diff Flow
+### Core Library Key Files
 
-1. CLI parsing (`CommandLineOption.cs`) -> `CommandFactory` -> `DiffCommand`
-2. `ExcelWorkbook.Load()` reads both files via NPOI
-3. `ExcelSheet.Diff()` runs LCS-based diff via NetDiff's `DiffUtil`
-4. Results stored in `ExcelSheetDiff` (contains `SortedDictionary<int, ExcelRowDiff>`)
-5. `DiffViewModel` binds results to two synchronized `FastWpfGrid` controls in `DiffView.xaml`
+| File | Purpose |
+|------|---------|
+| `ExcelSheet.cs` | 2-way LCS diff with column alignment |
+| `ThreeWayDiff.cs` | 3-way merge engine (reuses 2-way alignment) |
+| `CellComparer.cs` | Unified comparison logic (formula/whitespace/precision/comment) |
+| `TextDiffUtil.cs` | Character-level inline diff for detail panel |
+| `MergeWriter.cs` | Writes merged result to xlsx via NPOI |
+| `MergeResult.cs` | 2-way merge decision tracking |
 
-### Key Dependencies
+### GUI Services (extracted from DiffView)
 
-- **NPOI 2.7.2** — Excel file reading (does NOT require Microsoft Excel installed)
-- **Prism.Core 9.0.537** — MVVM base classes (BindableBase, DelegateCommand)
-- **CommandLineParser 2.9.1** — CLI argument parsing (verb-based API)
-- **YamlDotNet 16.3.0** — Settings persistence
-- **Extended.Wpf.Toolkit 4.6.1** — IntegerUpDown and ColorPicker controls
-- **Microsoft.Xaml.Behaviors.Wpf 1.1.135** — WPF behaviors (replaces System.Windows.Interactivity)
+| File | Purpose |
+|------|---------|
+| `Services/SearchService.cs` | Search history management |
+| `Services/ClipboardService.cs` | Copy selected cells as TSV/CSV |
+| `Services/LogBuilder.cs` | Diff log generation |
+| `Services/DiffNavigator.cs` | Next/prev cell/row navigation |
+| `Services/MergeApplicator.cs` | Accept src/dst merge operations |
 
 ### Data Model
 
 ```
 ExcelWorkbook -> ExcelSheet -> SortedDictionary<int, ExcelRow> -> List<ExcelCell>
+
+ExcelCell properties: Value, Formula, Comment
+Comparison: CellComparer.AreEqual() (handles formula, whitespace, numeric precision, comment)
+
+2-way diff result: ExcelSheetDiff -> ExcelRowDiff -> ExcelCellDiff (Status: None/Modified/Added/Removed)
+3-way diff result: ThreeWayDiffResult -> CellMergeResult (Status: Unchanged/MineOnly/TheirsOnly/BothSame/Conflict)
 ```
 
-Cell status enum: `None | Modified | Added | Removed` (same pattern for row/column status).
+### Key Dependencies
 
-`RowComparer` (`ExcelRow.cs`) implements `IEqualityComparer<ExcelRow>` with support for ignoring specific columns.
+- **NPOI 2.7.2** — Excel file reading (no Microsoft Excel required)
+- **Prism.Core 9.0.537** — MVVM base classes
+- **CommandLineParser 2.9.1** — CLI argument parsing (multi-verb: diff, merge)
+- **YamlDotNet 16.3.0** — Settings persistence
+- **Extended.Wpf.Toolkit 4.6.1** — IntegerUpDown and ColorPicker controls
 
-### Critical Components
+### 3-Panel Merge Layout
 
-- **FastWpfGrid**: Virtualized grid rendering only visible cells. Handles diff color rendering and synchronized left-right pane scrolling. Breaking the virtualization logic will cause severe performance issues with large files.
-- **ExcelSheet.Diff()** (`ExcelSheet.cs`): Core diff logic — the main entry point for computing sheet-level diffs.
-- **DiffView.xaml.cs** (~1100 lines): Main UI logic for the diff pane, event handling, grid model binding.
-
-## CLI Usage
-
-```bash
-ExcelMerge.GUI diff -s <source_file> -d <dest_file> [-c <external_cmd>] [-i] [-w] [-v] [-e <empty_name>] [-k]
 ```
+Default (2-panel diff):
+┌──────────────┬──────────────┐
+│  SRC (left)  │  DST (right) │
+└──────────────┴──────────────┘
+
+Merge mode with conflicts (3-panel, auto-expanded):
+┌──────────┬──────────┬──────────┐
+│ THEIRS   │  BASE    │  MINE    │
+│ (left)   │ (center) │ (right)  │
+└──────────┴──────────┴──────────┘
+BASE panel: columns 3-4 in Grid, Width="0" by default, toggled via ShowBasePanel()
+```
+
+## Critical Components — Modify with Care
+
+- **FastWpfGrid**: Virtualized rendering. Breaking it causes severe perf issues with large files.
+- **DiffViewEventHandler**: Event dispatch system syncs scrolling/sizing across all grids. All `ResolveAll<FastGridControl>()` loops MUST guard with `grid.Model == null` check — BASE panel may have no model.
+- **SimpleContainer.Resolve**: Returns `default` (not throw) when key not found. This is intentional — BASE panel doesn't register Rectangle/Grid for minimap.
+- **ExcelSheet.Diff()**: Mutates input sheets (column shifting). ThreeWayDiff deep-copies sheets before each diff call.
+
+## Development Lessons (Retrospective)
+
+### Recurring Bug Pattern: BASE Panel Registration
+The BASE panel was added to the existing 2-panel event system (container + dispatchers). Multiple crashes occurred because:
+1. BASE was registered as a `FastGridControl` but lacked `Rectangle` and `Grid` (no minimap)
+2. Event handlers iterated all registered grids without null-checking `Model`
+
+**Rule**: When adding a new grid/panel to the event system, register ALL types that handlers expect to Resolve, or ensure ALL Resolve calls handle null gracefully.
+
+### LCS Folding Creates "False Modified" Rows
+`DiffUtil.OptimizeCaseDeletedFirst` folds adjacent Delete+Insert into Modified. This means:
+- A row insertion can produce 1-2 "modified" rows at the boundary instead of pure Added
+- 3-way merge with row insertion can create false conflicts at boundaries
+- Tests should use tolerant assertions (`<= N` instead of `== 0`) for modified row counts
+
+### ExcelSheet.Diff() Mutates Inputs
+The column-shift logic in `ExcelSheet.Diff()` modifies `ExcelRow.Cells` in-place via `UpdateCells()`. This is dangerous when:
+- The same sheet is used in multiple diff calls (ThreeWayDiff)
+- Re-diffing after user changes config
+
+**Rule**: Always deep-copy ExcelSheet before passing to Diff() if the sheet will be reused.
+
+### Settings That Don't Work Are Bugs
+`ColorModifiedRow` was disabled during the BeyondCompare-style highlighting refactor but the setting remained in the UI. Users could toggle it with no effect. Settings must either work or be removed from the UI.
+
+### Constructor Signature Changes Break Silently
+When ExcelCell went from `(value, formula, comment, colIdx, rowIdx)` to `(value, colIdx, rowIdx, formula, comment)`, existing call sites with positional args compiled fine but passed wrong values. Named or optional parameters are safer for constructors with many string args.
+
+## Known Limitations
+
+- LCS row alignment may produce boundary artifacts with complex insertions/deletions
+- ThreeWayDiff row-level alignment depends on 2-way diff quality; row insertions may cause false conflicts at boundaries
+- No formula evaluation — compares formula strings, not computed results
+- No VBA, cell formatting, or named range comparison
+- Column insertion/deletion display may be inaccurate (original upstream issue)
 
 ## Backward Compatibility
 
-- Existing CLI arguments (`-s`, `-d`, `-c`, `-i`, `-w`, `-v`, `-e`, `-k`) must remain unchanged.
-- New arguments should use `--long-option` style.
-- Windows Explorer right-click integration must continue working.
-
-## Known Issues
-
-- Column insertion/deletion may display at incorrect positions (documented in README).
-- Row alignment can be inaccurate with complex insertions/deletions (LCS algorithm limitation).
-- No merge functionality (display-only diff).
-- Reads cell values only — no formula, comment, or VBA comparison.
+- Existing CLI arguments (`-s`, `-d`, `-c`, `-i`, `-w`, `-v`, `-e`, `-k`) unchanged
+- New arguments use `--long-option` style
+- Windows Explorer right-click integration works
+- `merge` is a new verb, does not affect existing `diff` behavior
