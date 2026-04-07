@@ -116,7 +116,9 @@ namespace ExcelMerge.GUI.Views
                 return;
 
             SyncScroll(e.Sender, dataGrid);
-            RecalculateViewport(e.Container.Resolve<Rectangle>(Key), dataGrid);
+            var viewport = e.Container.Resolve<Rectangle>(Key);
+            if (viewport != null)
+                RecalculateViewport(viewport, dataGrid);
         }
 
         public void OnSizeChanged(DiffViewEventArgs<FastGridControl> e, SizeChangedEventArgs se)
@@ -126,7 +128,9 @@ namespace ExcelMerge.GUI.Views
             if (dataGrid == null || dataGrid != e.Sender)
                 return;
 
-            RecalculateViewport(e.Container.Resolve<Rectangle>(Key), dataGrid);
+            var viewport = e.Container.Resolve<Rectangle>(Key);
+            if (viewport != null)
+                RecalculateViewport(viewport, dataGrid);
         }
 
         public void OnModelUpdated(DiffViewEventArgs<FastGridControl> e)

@@ -26,7 +26,7 @@ namespace ExcelMerge.GUI.Utilities
             if (_instances.TryGetValue((typeof(T), key), out var instance))
                 return (T)instance;
 
-            throw new InvalidOperationException($"No instance registered for type {typeof(T).Name} with key '{key}'.");
+            return default;
         }
 
         public IEnumerable<T> ResolveAll<T>()
